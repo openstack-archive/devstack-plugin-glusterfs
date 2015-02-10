@@ -93,6 +93,19 @@ function configure_glusterfs_cinder {
     done
 }
 
+# this modifies the cinder.conf file and create glusterfs_shares_config file.
+function configure_cinder_backend_glusterfs {
+    local be_name=$1
+    iniset $CINDER_CONF $be_name volume_backend_name $be_name
+    iniset $CINDER_CONF $be_name volume_driver "cinder.volume.drivers.glusterfs.GlusterfsDriver"
+    iniset $CINDER_CONF $be_name glusterfs_shares_config "$CINDER_CONF_DIR/glusterfs-shares-$be_name.conf"
+
+    if [[ -n "$CINDER_GLUSTERFS_SHARES" ]]; then
+        CINDER_GLUSTERFS_SHARES=$(echo $CINDER_GLUSTERFS_SHARES | tr ";" "\n")
+        echo "$CINDER_GLUSTERFS_SHARES" | tee "$CINDER_CONF_DIR/glusterfs-shares-$be_name.conf"
+    fi
+}
+
 # install_glusterfs() - Collect source and prepare
 function install_glusterfs {
     if [[ ${DISTRO} =~ rhel7 ]] && [[ ! -f /etc/yum.repos.d/glusterfs-epel.repo ]]; then
