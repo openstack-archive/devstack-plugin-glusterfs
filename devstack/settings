@@ -1,0 +1,9 @@
+# Devstack settings
+
+# We have to add glusterfs to enabled services for screen_it to work
+enable_service glusterfs
+
+# Below are GlusterFS specific settings
+ENABLED_BACKENDS=glusterfs:glusterfs
+TEMPEST_STORAGE_PROTOCOL=gluster
+GLUSTERFS_LOOPBACK_DISK_SIZE=8G
