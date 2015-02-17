@@ -5,5 +5,5 @@ enable_service glusterfs
 
 # Below are GlusterFS specific settings
 CINDER_ENABLED_BACKENDS=glusterfs:glusterfs
-TEMPEST_STORAGE_PROTOCOL=gluster
+TEMPEST_STORAGE_PROTOCOL=glusterfs
 GLUSTERFS_LOOPBACK_DISK_SIZE=8G
