@@ -91,10 +91,6 @@ function configure_glusterfs_cinder {
         sudo gluster --mode=script volume start $vol_name
         sudo gluster --mode=script volume set $vol_name server.allow-insecure on
     done
-    # allowing cinder user to create online snapshots for testing purpose.
-    local n_policy_file=$NOVA_CONF_DIR/policy.json
-    sed -i -e '/compute_extension:os-assisted-volume-snapshots:create/ s/rule:admin_api//' $n_policy_file
-    sed -i -e '/compute_extension:os-assisted-volume-snapshots:delete/ s/rule:admin_api//' $n_policy_file
 }
 
 # this modifies the cinder.conf file and create glusterfs_shares_config file.
