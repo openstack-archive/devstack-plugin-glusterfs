@@ -25,7 +25,7 @@ GLUSTERFS_DISK_IMAGE=${DATA_DIR}/cinder/glusterfs.img
 # DevStack will create a loop-back disk formatted as XFS to store the
 # GlusterFS data. Set ``GLUSTERFS_LOOPBACK_DISK_SIZE`` to the disk size in
 # kilobytes.
-# Default is 4 gigabyte.
+# Default is 4 gigabyte. But we can configure through localrc.
 GLUSTERFS_LOOPBACK_DISK_SIZE=${GLUSTERFS_LOOPBACK_DISK_SIZE:-4G}
 
 # Devstack will create GlusterFS shares to store Cinder volumes.
