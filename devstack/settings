@@ -7,3 +7,6 @@ enable_service glusterfs
 CINDER_ENABLED_BACKENDS=glusterfs:glusterfs
 TEMPEST_STORAGE_PROTOCOL=glusterfs
 GLUSTERFS_LOOPBACK_DISK_SIZE=8G
+
+# Disabling cinder backup feature for this driver
+disable_service c-bak
