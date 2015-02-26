@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: Deepak C Shetty <deepakcs@redhat.com>
+Workflow+1: Deepak C Shetty <deepakcs@redhat.com>
+Code-Review+2: Bharat Kumar Kobagana <bharat.kobagana@redhat.com>
+Workflow+1: Bharat Kumar Kobagana <bharat.kobagana@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 26 Feb 2015 07:54:28 +0000
+Reviewed-on: https://review.openstack.org/159219
+Project: stackforge/devstack-plugin-glusterfs
+Branch: refs/heads/master
