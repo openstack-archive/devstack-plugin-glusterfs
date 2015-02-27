@@ -133,6 +133,7 @@ function stop_glusterfs {
     fi
 }
 
+# Conditions to call above functions
 if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
     echo_summary "Installing GlusterFS"
     install_glusterfs
