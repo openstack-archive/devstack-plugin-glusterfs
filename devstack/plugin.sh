@@ -9,7 +9,7 @@
 # ``stack.sh`` calls the entry points in this order:
 #
 # - install_glusterfs
-# - configure_glusterfs_cinder
+# - configure_glusterfs_cinder & configure_privileged_user
 # - start_glusterfs
 # - stop_glusterfs
 # - cleanup_glusterfs
@@ -91,6 +91,14 @@ function configure_glusterfs_cinder {
         sudo gluster --mode=script volume start $vol_name
         sudo gluster --mode=script volume set $vol_name server.allow-insecure on
     done
+    configure_privileged_user
+}
+
+# Configure privileged user to support onine_snapshots
+function configure_privileged_user {
+    iniset $CINDER_CONF DEFAULT os_privileged_user_name nova
+    iniset $CINDER_CONF DEFAULT os_privileged_user_password $SERVICE_PASSWORD
+    iniset $CINDER_CONF DEFAULT os_privileged_user_tenant service
 }
 
 # this modifies the cinder.conf file and create glusterfs_shares_config file.
