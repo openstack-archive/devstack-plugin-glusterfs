@@ -64,7 +64,10 @@ function cleanup_glusterfs {
         sudo gluster --mode=script volume delete $vol_name
     done
 
-    uninstall_package glusterfs-server
+    if [[ "$OFFLINE" = "False" ]]; then
+        uninstall_package glusterfs-server
+    fi
+
     if egrep -q ${GLUSTERFS_DATA_DIR} /proc/mounts; then
         sudo umount ${GLUSTERFS_DATA_DIR}
     fi
