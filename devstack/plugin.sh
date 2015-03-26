@@ -120,7 +120,12 @@ function configure_cinder_backend_glusterfs {
 # install_glusterfs() - Collect source and prepare
 function install_glusterfs {
     if [[ ${DISTRO} =~ rhel7 ]] && [[ ! -f /etc/yum.repos.d/glusterfs-epel.repo ]]; then
-        sudo  wget $GLUSTERFS_CENTOS_REPO -O /etc/yum.repos.d/glusterfs-epel.repo
+        sudo wget $GLUSTERFS_CENTOS_REPO -O /etc/yum.repos.d/glusterfs-epel.repo
+    elif is_ubuntu; then
+        sudo wget -O - http://download.gluster.org/pub/gluster/glusterfs/3.6/3.6.2/Debian/wheezy/pubkey.gpg |  sudo apt-key add -
+        sudo echo deb http://download.gluster.org/pub/gluster/glusterfs/3.6/3.6.2/Debian/wheezy/apt wheezy main | sudo tee  /etc/apt/sources.list.d/gluster.list
+        NO_UPDATE_REPOS=False
+        REPOS_UPDATED=False
     fi
     install_package glusterfs-server
     install_package xfsprogs
