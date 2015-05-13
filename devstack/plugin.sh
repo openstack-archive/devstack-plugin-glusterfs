@@ -31,15 +31,19 @@ GLUSTERFS_LOOPBACK_DISK_SIZE=${GLUSTERFS_LOOPBACK_DISK_SIZE:-4G}
 # Devstack will create GlusterFS shares to store Cinder volumes.
 # Those shares can be configured by seting CINDER_GLUSTERFS_SHARES.
 # By default CINDER_GLUSTERFS_SHARES="127.0.0.1:/vol1"
-
 CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/vol1"}
 
 # Glusterfs volume provisioned type, allowed values are 'thin' or 'thick'.
 # Since we only support raw volumes for backup, using 'thick' as default value.
 GLUSTERFS_VOLUME_PROV_TYPE=${GLUSTERFS_VOLUME_PROV_TYPE:-"thick"}
 
-# Adding GlusterFS repo to CentOS / RHEL 7 platform.
+# GlusterFS backup shares
+CINDER_GLUSTERFS_BACKUP_SHARE=${CINDER_GLUSTERFS_BACKUP_SHARE:-"127.0.0.1:/backup_vol"}
 
+# Set to true, if you want to configure glusterfs as cinder backup driver.
+CONFIGURE_GLUSTERFS_BACKUP=${CONFIGURE_GLUSTERFS_BACKUP:-False}
+
+# Adding GlusterFS repo to CentOS / RHEL 7 platform.
 GLUSTERFS_CENTOS_REPO=${GLUSTERFS_CENTOS_REPO:-"http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo"}
 
 # Functions
@@ -55,6 +59,15 @@ function cleanup_glusterfs {
         fi
     done
 
+    if is_service_enabled c-bak && [[ "$CONFIGURE_GLUSTERFS_BACKUP" == "True" ]]; then
+        for share in $(echo $CINDER_GLUSTERFS_BACKUP_SHARE | sed "s/;/ /");  do
+            local mount_point=$(grep $share /proc/mounts | awk '{print $2}')
+            if [[ -n $mount_point ]]; then
+                sudo umount $mount_point
+            fi
+        done
+    fi
+
     if [[ -e ${GLUSTERFS_DISK_IMAGE} ]]; then
         sudo rm -f ${GLUSTERFS_DISK_IMAGE}
     fi
@@ -67,6 +80,17 @@ function cleanup_glusterfs {
         sudo gluster --mode=script volume stop $vol_name
         sudo gluster --mode=script volume delete $vol_name
     done
+
+    if is_service_enabled c-bak && [[ "$CONFIGURE_GLUSTERFS_BACKUP" == "True" ]]; then
+        for share in $(echo $CINDER_GLUSTERFS_BACKUP_SHARE | sed "s/;/ /"); do
+            GLUSTERFS_BACKUP_VOLUME+=,$(echo $share | cut -d/ -f2);
+        done
+
+        for vol_name in $(echo $GLUSTERFS_BACKUP_VOLUME | sed "s/,/ /g"); do
+            sudo gluster --mode=script volume stop $vol_name
+            sudo gluster --mode=script volume delete $vol_name
+        done
+    fi
 
     if [[ "$OFFLINE" = "False" ]]; then
         uninstall_package glusterfs-server
@@ -98,6 +122,32 @@ function configure_glusterfs_cinder {
         sudo gluster --mode=script volume start $vol_name
         sudo gluster --mode=script volume set $vol_name server.allow-insecure on
     done
+<<<<<<< HEAD
+=======
+
+    # Configure glusterfs backend.
+    if is_service_enabled c-bak && [[ "$CONFIGURE_GLUSTERFS_BACKUP" == "True" ]]; then
+        for share in $(echo $CINDER_GLUSTERFS_BACKUP_SHARE | sed "s/;/ /"); do
+            GLUSTERFS_BACKUP_VOLUME+=,$(echo $share | cut -d/ -f2);
+        done
+        for vol_name in $(echo $GLUSTERFS_BACKUP_VOLUME | sed "s/,/ /g"); do
+            sudo mkdir -p ${GLUSTERFS_DATA_DIR}/$vol_name
+            sudo gluster --mode=script volume \
+                create $vol_name $(hostname):${GLUSTERFS_DATA_DIR}/$vol_name
+            sudo gluster --mode=script volume start $vol_name
+            sudo gluster --mode=script volume set $vol_name server.allow-insecure on
+        done
+    fi
+
+
+    configure_privileged_user
+}
+
+# Configure privileged user to support onine_snapshots
+function configure_privileged_user {
+    iniset $CINDER_CONF DEFAULT os_privileged_user_name nova
+    iniset $CINDER_CONF DEFAULT os_privileged_user_password $SERVICE_PASSWORD
+    iniset $CINDER_CONF DEFAULT os_privileged_user_tenant service
 }
 
 # this modifies the cinder.conf file and create glusterfs_shares_config file.
@@ -111,6 +161,11 @@ function configure_cinder_backend_glusterfs {
     if [[ -n "$CINDER_GLUSTERFS_SHARES" ]]; then
         CINDER_GLUSTERFS_SHARES=$(echo $CINDER_GLUSTERFS_SHARES | tr ";" "\n")
         echo "$CINDER_GLUSTERFS_SHARES" | tee "$CINDER_CONF_DIR/glusterfs-shares-$be_name.conf"
+    fi
+
+    if is_service_enabled c-bak && [[ "$CONFIGURE_GLUSTERFS_BACKUP" == "True" ]]; then
+        iniset $CINDER_CONF DEFAULT backup_driver "cinder.backup.drivers.glusterfs"
+        iniset $CINDER_CONF DEFAULT glusterfs_backup_share "$CINDER_GLUSTERFS_BACKUP_SHARE"
     fi
 }
 
