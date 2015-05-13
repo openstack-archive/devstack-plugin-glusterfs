@@ -4,7 +4,21 @@
 enable_service glusterfs
 
 # Below are GlusterFS specific settings, with their defaults
+
+# Setting storage protocal
 TEMPEST_STORAGE_PROTOCOL=glusterfs
+
+# Size of loopback device
 GLUSTERFS_LOOPBACK_DISK_SIZE=${GLUSTERFS_LOOPBACK_DISK_SIZE:-8G}
+
+# GlusterFS shares
 CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/vol1;127.0.0.1:/vol2"}
+
+# Using "thick" as gluster volume provisioned type
 GLUSTERFS_VOLUME_PROV_TYPE=${GLUSTERFS_VOLUME_PROV_TYPE:-"thick"}
+
+# Providing share to backup volumes
+CINDER_GLUSTERFS_BACKUP_SHARE=${CINDER_GLUSTERFS_BACKUP_SHARE:-"127.0.0.1:/vol3"}
+
+# Configure glusterfs as backup driver
+CONFIGURE_GLUSTERFS_BACKUP=${CONFIGURE_GLUSTERFS_BACKUP:-False}
