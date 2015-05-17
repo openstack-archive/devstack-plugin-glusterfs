@@ -98,6 +98,8 @@ function configure_glusterfs_cinder {
         sudo gluster --mode=script volume start $vol_name
         sudo gluster --mode=script volume set $vol_name server.allow-insecure on
     done
+    # Changing file permissions of glusterfs logs
+    sudo chmod 777 -R /var/log/glusterfs/
     configure_privileged_user
 }
 
