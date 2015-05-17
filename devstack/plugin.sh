@@ -98,6 +98,10 @@ function configure_glusterfs_cinder {
         sudo gluster --mode=script volume start $vol_name
         sudo gluster --mode=script volume set $vol_name server.allow-insecure on
     done
+
+    # Changing file permissions of glusterfs logs.
+    # This avoids creation of zero sized glusterfs log files while running CI job (Bug: 1455951).
+    sudo chmod 755 -R /var/log/glusterfs/
 }
 
 # this modifies the cinder.conf file and create glusterfs_shares_config file.
