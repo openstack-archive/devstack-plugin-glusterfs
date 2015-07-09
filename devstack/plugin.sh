@@ -110,7 +110,7 @@ function configure_cinder_backend_glusterfs {
     iniset $CINDER_CONF $be_name volume_backend_name $be_name
     iniset $CINDER_CONF $be_name volume_driver "cinder.volume.drivers.glusterfs.GlusterfsDriver"
     iniset $CINDER_CONF $be_name glusterfs_shares_config "$CINDER_CONF_DIR/glusterfs-shares-$be_name.conf"
-    iniset $CINDER_CONF $be_name volume_prov_type $GLUSTERFS_VOLUME_PROV_TYPE
+    #iniset $CINDER_CONF $be_name volume_prov_type $GLUSTERFS_VOLUME_PROV_TYPE
 
     if [[ -n "$CINDER_GLUSTERFS_SHARES" ]]; then
         CINDER_GLUSTERFS_SHARES=$(echo $CINDER_GLUSTERFS_SHARES | tr ";" "\n")
