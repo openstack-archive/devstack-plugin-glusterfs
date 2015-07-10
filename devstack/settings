@@ -3,6 +3,10 @@
 # We have to add glusterfs to enabled services for screen_it to work
 enable_service glusterfs
 
+# Cinder encrypted volume tests are not supported with a GlusterFS
+# backend due to bug <TODO, put bug #>
+ATTACH_ENCRYPTED_VOLUME_AVAILABLE=False
+
 # Below are GlusterFS specific settings, with their defaults
 TEMPEST_STORAGE_PROTOCOL=glusterfs
 GLUSTERFS_LOOPBACK_DISK_SIZE=${GLUSTERFS_LOOPBACK_DISK_SIZE:-8G}
