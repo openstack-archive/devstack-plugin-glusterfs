@@ -41,12 +41,20 @@ CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/vol1"}
 # Adding GlusterFS repo to CentOS / RHEL 7 platform.
 GLUSTERFS_CENTOS_REPO=${GLUSTERFS_CENTOS_REPO:-"http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo"}
 
+# Glance GlusterFS share
+GLANCE_GLUSTERFS_SHARE=${GLANCE_GLUSTERFS_SHARE:-"127.0.0.1:/glance_store"}
+
 # Initializing gluster specific functions
 source $GLUSTERFS_PLUGIN_DIR/gluster-functions.sh
 
 if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
     echo_summary "Installing GlusterFS"
     install_glusterfs
+elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
+        if is_service_enabled glance; then
+            echo_summary "Configuring Glance for GlusterFS"
+            configure_glance_backend_glusterfs
+        fi
 fi
 
 if [[ "$1" == "unstack" ]]; then

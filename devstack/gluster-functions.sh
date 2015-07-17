@@ -151,3 +151,14 @@ function configure_cinder_backend_glusterfs {
         echo "$CINDER_GLUSTERFS_SHARES" | tee "$CINDER_CONF_DIR/glusterfs-shares-$be_name.conf"
     fi
 }
+
+# Configure GlusterFS as a backend for Glance
+function configure_glance_backend_glusterfs {
+    create_gluster_volumes $GLANCE_GLUSTERFS_SHARE
+
+    # Delete existing images
+    rm -rf $GLANCE_IMAGE_DIR
+    mkdir -p $GLANCE_IMAGE_DIR
+    sudo mount -t glusterfs $GLANCE_GLUSTERFS_SHARE $GLANCE_IMAGE_DIR
+    sudo chown -R $STACK_USER:$STACK_USER $DATA_DIR
+}
