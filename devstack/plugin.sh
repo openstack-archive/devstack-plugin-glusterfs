@@ -36,7 +36,7 @@ GLUSTERFS_LOOPBACK_DISK_SIZE=${GLUSTERFS_LOOPBACK_DISK_SIZE:-4G}
 # Devstack will create GlusterFS shares to store Cinder volumes.
 # Those shares can be configured by seting CINDER_GLUSTERFS_SHARES.
 # By default CINDER_GLUSTERFS_SHARES="127.0.0.1:/vol1"
-CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/vol1"}
+CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/cinder-vol"}
 
 # Adding GlusterFS repo to CentOS / RHEL 7 platform.
 GLUSTERFS_CENTOS_REPO=${GLUSTERFS_CENTOS_REPO:-"http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo"}
