@@ -89,6 +89,9 @@ function cleanup_glusterfs {
     # Cleaning up Cinder GlusterFS shares
     _delete_gluster_shares $CINDER_GLUSTERFS_SHARES
 
+    # Cleaning up Nova GlusterFS shares
+    _delete_gluster_shares $NOVA_GLUSTERFS_SHARE
+
     if [[ -e ${GLUSTERFS_DISK_IMAGE} ]]; then
         sudo rm -f ${GLUSTERFS_DISK_IMAGE}
     fi
@@ -151,4 +154,16 @@ function configure_cinder_backend_glusterfs {
         CINDER_GLUSTERFS_SHARES=$(echo $CINDER_GLUSTERFS_SHARES | tr ";" "\n")
         echo "$CINDER_GLUSTERFS_SHARES" | tee "$CINDER_CONF_DIR/glusterfs-shares-$be_name.conf"
     fi
+}
+
+# Configure GlusterFS as a backend for Nova
+function configure_nova_backend_glusterfs {
+    _create_gluster_volumes $NOVA_GLUSTERFS_SHARE
+
+    # Delete existing VMs
+    rm -rf $NOVA_INSTANCES_PATH
+    mkdir -p $NOVA_INSTANCES_PATH
+
+    sudo mount -t glusterfs $NOVA_GLUSTERFS_SHARE $NOVA_INSTANCES_PATH
+    sudo chown -R $STACK_USER:$STACK_USER $NOVA_INSTANCES_PATH
 }
