@@ -13,6 +13,7 @@
 # - install_glusterfs
 # - start_glusterfs
 # - configure_cinder_backend_glusterfs
+# - configure_glance_backend_glusterfs
 # - stop_glusterfs
 # - cleanup_glusterfs
 
@@ -41,12 +42,23 @@ CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/cinder-vol"}
 # Adding GlusterFS repo to CentOS / RHEL 7 platform.
 GLUSTERFS_CENTOS_REPO=${GLUSTERFS_CENTOS_REPO:-"http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo"}
 
+# Set to true, if you want to configure GlusterFS as a backend for Glance.
+CONFIGURE_GLUSTERFS_GLANCE=${CONFIGURE_GLUSTERFS_GLANCE:-True}
+
+# Glance GlusterFS share
+GLANCE_GLUSTERFS_SHARE=${GLANCE_GLUSTERFS_SHARE:-"127.0.0.1:/glance-vol"}
+
 # Initializing gluster specific functions
 source $GLUSTERFS_PLUGIN_DIR/gluster-functions.sh
 
 if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
     echo_summary "Installing GlusterFS"
     install_glusterfs
+elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
+    if is_service_enabled glance && [[ "$CONFIGURE_GLUSTERFS_GLANCE" == "True" ]]; then
+        echo_summary "Configuring GlusterFS as a backend for Glance"
+        configure_glance_backend_glusterfs
+    fi
 fi
 
 if [[ "$1" == "unstack" ]]; then
