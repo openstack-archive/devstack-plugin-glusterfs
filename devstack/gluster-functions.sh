@@ -89,6 +89,9 @@ function cleanup_glusterfs {
     # Cleaning up Cinder GlusterFS shares
     _delete_gluster_shares $CINDER_GLUSTERFS_SHARES
 
+    # Cleaning up Glance GlusterFS shares
+    _delete_gluster_shares $GLANCE_GLUSTERFS_SHARE
+
     if [[ -e ${GLUSTERFS_DISK_IMAGE} ]]; then
         sudo rm -f ${GLUSTERFS_DISK_IMAGE}
     fi
@@ -151,4 +154,16 @@ function configure_cinder_backend_glusterfs {
         CINDER_GLUSTERFS_SHARES=$(echo $CINDER_GLUSTERFS_SHARES | tr ";" "\n")
         echo "$CINDER_GLUSTERFS_SHARES" | tee "$CINDER_CONF_DIR/glusterfs-shares-$be_name.conf"
     fi
+}
+
+# Configure GlusterFS as a backend for Glance
+function configure_glance_backend_glusterfs {
+    _create_gluster_volumes $GLANCE_GLUSTERFS_SHARE
+
+    # Delete existing images
+    rm -rf $GLANCE_IMAGE_DIR
+    mkdir -p $GLANCE_IMAGE_DIR
+
+    sudo mount -t glusterfs $GLANCE_GLUSTERFS_SHARE $GLANCE_IMAGE_DIR
+    sudo chown -R $STACK_USER:$STACK_USER $DATA_DIR
 }
