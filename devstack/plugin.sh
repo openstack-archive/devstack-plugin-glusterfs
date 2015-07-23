@@ -19,6 +19,34 @@
 # Defaults
 # --------
 
+# Set CONFIGURE_GLUSTERFS_CINDER to true, to enable GlusterFS as a backend for Cinder.
+CONFIGURE_GLUSTERFS_CINDER=${CONFIGURE_GLUSTERFS_CINDER:-True}
+
+# Error out when devstack-plugin-glusterfs is enabled, but not selected as a backend for cinder.
+if [ "$CONFIGURE_GLUSTERFS_CINDER" = "False" ]; then
+    echo "GlusterFS plugin enabled but not selected as a backend for Cinder."
+    echo "Please set CONFIGURE_GLUSTERFS_CINDER to True in localrc."
+    exit 1
+fi
+
+# When CONFIGURE_GLUSTERFS_CINDER is true, CINDER_ENABLED_BACKENDS should have
+# at least one backend of type 'glusterfs', error out otherwise.
+if [ "$CONFIGURE_GLUSTERFS_CINDER" = "True" ]; then
+    local is_gluster_backend_configured=False
+    for be in ${CINDER_ENABLED_BACKENDS//,/ }; do
+        if [ "${be%%:*}" = "glusterfs" ]; then
+            is_gluster_backend_configured=True
+            break
+        fi
+    done
+    if [ "$is_gluster_backend_configured" = "False" ]; then
+        echo "CONFIGURE_GLUSTERFS_CINDER is set to True, to configure GlusterFS as a backend for Cinder."
+        echo "But, glusterfs backend type not present in CINDER_ENABLED_BACKENDS."
+        echo "Please enable at least one backend of type glusterfs in CINDER_ENABLED_BACKENDS."
+        exit 1
+    fi
+fi
+
 # GLUSTERFS_PLUGIN_DIR contains the path to devstack-plugin-glusterfs/devstack directory
 GLUSTERFS_PLUGIN_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 
