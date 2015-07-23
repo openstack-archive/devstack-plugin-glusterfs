@@ -19,6 +19,17 @@
 # Defaults
 # --------
 
+# CONFIGURE_GLUSTERFS_CINDER set to true when glusterfs is backend for Cinder.
+if [[ -n "$CINDER_ENABLED_BACKENDS" ]]; then
+    for be in ${CINDER_ENABLED_BACKENDS//,/ }; do
+        if [ "${be%%:*}" = "glusterfs" ]; then
+            CONFIGURE_GLUSTERFS_CINDER=True
+            break
+        fi
+    done
+fi
+CONFIGURE_GLUSTERFS_CINDER=${CONFIGURE_GLUSTERFS_CINDER:-False}
+
 # GLUSTERFS_PLUGIN_DIR contains the path to devstack-plugin-glusterfs/devstack directory
 GLUSTERFS_PLUGIN_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 
@@ -41,23 +52,29 @@ CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/cinder-vol"}
 # Adding GlusterFS repo to CentOS / RHEL 7 platform.
 GLUSTERFS_CENTOS_REPO=${GLUSTERFS_CENTOS_REPO:-"http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo"}
 
-# Initializing gluster specific functions
-source $GLUSTERFS_PLUGIN_DIR/gluster-functions.sh
-
-if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
-    echo_summary "Installing GlusterFS"
-    install_glusterfs
+# Install & configure GlusterFS only when GlusterFS is backend for Cinder.
+if [ "$CONFIGURE_GLUSTERFS_CINDER" = "True" ]; then
+    IS_GLUSTERFS_ENABLED=True
 fi
 
-if [[ "$1" == "unstack" ]]; then
-    cleanup_glusterfs
-    stop_glusterfs
-fi
+if [ "$IS_GLUSTERFS_ENABLED" = "True" ]; then
+    # Initializing gluster specific functions
+    source $GLUSTERFS_PLUGIN_DIR/gluster-functions.sh
 
-if [[ "$1" == "clean" ]]; then
-    cleanup_glusterfs
-fi
+    if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
+        echo_summary "Installing GlusterFS"
+        install_glusterfs
+    fi
 
+    if [[ "$1" == "unstack" ]]; then
+        cleanup_glusterfs
+        stop_glusterfs
+    fi
+
+    if [[ "$1" == "clean" ]]; then
+        cleanup_glusterfs
+    fi
+fi
 ## Local variables:
 ## mode: shell-script
 ## End:
