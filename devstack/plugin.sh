@@ -14,6 +14,7 @@
 # - start_glusterfs
 # - configure_cinder_backend_glusterfs
 # - configure_glance_backend_glusterfs
+# - configure_nova_backend_glusterfs
 # - stop_glusterfs
 # - cleanup_glusterfs
 
@@ -26,10 +27,13 @@ CONFIGURE_GLUSTERFS_CINDER=${CONFIGURE_GLUSTERFS_CINDER:-True}
 # Set CONFIGURE_GLUSTERFS_GLANCE to true, to configure GlusterFS as a backend for Glance.
 CONFIGURE_GLUSTERFS_GLANCE=${CONFIGURE_GLUSTERFS_GLANCE:-False}
 
-# Error out when devstack-plugin-glusterfs is enabled, but not selected as a backend for cinder.
-if [ "$CONFIGURE_GLUSTERFS_CINDER" = "False" ] && [ "$CONFIGURE_GLUSTERFS_GLANCE" = "False" ]; then
-    echo "GlusterFS plugin enabled but not selected as a backend for Cinder or Glance."
-    echo "Please set CONFIGURE_GLUSTERFS_CINDER and/or CONFIGURE_GLUSTERFS_GLANCE to True in localrc."
+# Set CONFIGURE_GLUSTERFS_NOVA to true, to configure GlusterFS as a backend for Nova.
+CONFIGURE_GLUSTERFS_NOVA=${CONFIGURE_GLUSTERFS_NOVA:-False}
+
+# Error out when devstack-plugin-glusterfs is enabled, but not selected as a backend for Cinder, Glance or Nova.
+if [ "$CONFIGURE_GLUSTERFS_CINDER" = "False" ] && [ "$CONFIGURE_GLUSTERFS_GLANCE" = "False" ] && [ "$CONFIGURE_GLUSTERFS_NOVA" = "False" ];  then
+    echo "GlusterFS plugin enabled but not selected as a backend for Cinder, Glance or Nova."
+    echo "Please set CONFIGURE_GLUSTERFS_CINDER, CONFIGURE_GLUSTERFS_GLANCE and/or CONFIGURE_GLUSTERFS_NOVA to True in localrc."
     exit 1
 fi
 
@@ -73,6 +77,9 @@ CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/cinder-vol"}
 # Glance GlusterFS share
 GLANCE_GLUSTERFS_SHARE=${GLANCE_GLUSTERFS_SHARE:-"127.0.0.1:/glance-vol"}
 
+# Glance Nova share
+NOVA_GLUSTERFS_SHARE=${NOVA_GLUSTERFS_SHARE:-"127.0.0.1:/nova-vol"}
+
 # Adding GlusterFS repo to CentOS / RHEL 7 platform.
 GLUSTERFS_CENTOS_REPO=${GLUSTERFS_CENTOS_REPO:-"http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo"}
 
@@ -86,6 +93,10 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     if is_service_enabled glance && [[ "$CONFIGURE_GLUSTERFS_GLANCE" == "True" ]]; then
         echo_summary "Configuring GlusterFS as a backend for Glance"
         configure_glance_backend_glusterfs
+    fi
+    if is_service_enabled nova && [[ "$CONFIGURE_GLUSTERFS_NOVA" == "True" ]]; then
+        echo_summary "Configuring GlusterFS as a backend for Nova"
+        configure_nova_backend_glusterfs
     fi
 fi
 
