@@ -96,6 +96,11 @@ function cleanup_glusterfs {
         _delete_gluster_shares $GLANCE_GLUSTERFS_SHARE
     fi
 
+    # Cleaning up Nova GlusterFS share
+    if [ "$CONFIGURE_GLUSTERFS_NOVA" = "True" ]; then
+        _delete_gluster_shares $NOVA_GLUSTERFS_SHARE
+    fi
+
     if [[ -e ${GLUSTERFS_DISK_IMAGE} ]]; then
         sudo rm -f ${GLUSTERFS_DISK_IMAGE}
     fi
@@ -179,4 +184,11 @@ function configure_glance_backend_glusterfs {
     _create_gluster_volumes $GLANCE_GLUSTERFS_SHARE
 
     _mount_gluster_volume $GLANCE_IMAGE_DIR $GLANCE_GLUSTERFS_SHARE
+}
+
+# Configure GlusterFS as a backend for Nova
+function configure_nova_backend_glusterfs {
+    _create_gluster_volumes $NOVA_GLUSTERFS_SHARE
+
+    _mount_gluster_volume $NOVA_INSTANCES_PATH $NOVA_GLUSTERFS_SHARE
 }
