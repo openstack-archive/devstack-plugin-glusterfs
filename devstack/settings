@@ -14,3 +14,6 @@ CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/cinder-vol1;127.0
 
 # Set default volume prov type to thick as we don't yet support backup for thin (qcow2) files
 GLUSTERFS_VOLUME_PROV_TYPE=${GLUSTERFS_VOLUME_PROV_TYPE:-thick}
+
+# Enabling GlusterFS as a backend for Glace
+CONFIGURE_GLUSTERFS_GLANCE=${CONFIGURE_GLUSTERFS_GLANCE:-True}
