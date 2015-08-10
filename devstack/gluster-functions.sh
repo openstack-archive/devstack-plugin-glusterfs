@@ -87,7 +87,9 @@ function cleanup_glusterfs {
     local vol_name
 
     # Cleaning up Cinder GlusterFS shares
-    _delete_gluster_shares $CINDER_GLUSTERFS_SHARES
+    if [ "$CONFIGURE_GLUSTERFS_CINDER" = "True" ]; then
+        _delete_gluster_shares $CINDER_GLUSTERFS_SHARES
+    fi
 
     if [[ -e ${GLUSTERFS_DISK_IMAGE} ]]; then
         sudo rm -f ${GLUSTERFS_DISK_IMAGE}
