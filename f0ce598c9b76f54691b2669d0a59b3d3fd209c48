@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Ramana Raja <rraja@redhat.com>
+Workflow+1: Ramana Raja <rraja@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Sat, 15 Aug 2015 13:09:59 +0000
+Reviewed-on: https://review.openstack.org/213426
+Project: stackforge/devstack-plugin-glusterfs
+Branch: refs/heads/master
