@@ -37,6 +37,12 @@ CONFIGURE_GLUSTERFS_MANILA=${CONFIGURE_GLUSTERFS_MANILA:-False}
 # Set GLUSTERFS_MANILA_DRIVER_TYPE to either 'glusterfs' or 'glusterfs-native'.
 GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE:-glusterfs}
 
+# Set GLUSTERFS_VG_NAME to the name of volume group.
+GLUSTERFS_VG_NAME=${GLUSTERFS_VG_NAME:-glusterfs-vg}
+
+# Set GLUSTERFS_THIN_POOL_NAME to the name of thinpool.
+GLUSTERFS_THIN_POOL_NAME=${GLUSTERFS_THIN_POOL_NAME:-glusterfs-thinpool}
+
 # Error out when devstack-plugin-glusterfs is enabled, but not selected as a backend for Cinder, Glance or Nova.
 if [ "$CONFIGURE_GLUSTERFS_CINDER" = "False" ] && [ "$CONFIGURE_GLUSTERFS_GLANCE" = "False" ] && [ "$CONFIGURE_GLUSTERFS_NOVA" = "False" ] && [ "$CONFIGURE_GLUSTERFS_MANILA" = "False" ];  then
     echo "GlusterFS plugin enabled but not selected as a backend for Cinder, Glance, Nova or Manila."
