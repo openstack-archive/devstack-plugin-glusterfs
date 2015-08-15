@@ -19,6 +19,10 @@ echo "DEVSTACK_GATE_TEMPEST_ALLOW_TENANT_ISOLATION=1" >> $localrc_path
 echo "API_RATE_LIMIT=False" >> $localrc_path
 echo "TEMPEST_SERVICES+=,manila" >> $localrc_path
 
+echo "MANILA_BACKEND1_CONFIG_GROUP_NAME=glusternfs1" >> $localrc_path
+echo "MANILA_SHARE_BACKEND1_NAME=GLUSTERNFS" >> $localrc_path
+echo "MANILA_OPTGROUP_glusternfs1_driver_handles_share_servers=False" >> $localrc_path
+
 echo "MANILA_USE_DOWNGRADE_MIGRATIONS=True" >> $localrc_path
 
 # JOB_NAME is defined in openstack-infra/config project
