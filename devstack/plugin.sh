@@ -15,6 +15,7 @@
 # - configure_cinder_backend_glusterfs
 # - configure_glance_backend_glusterfs
 # - configure_nova_backend_glusterfs
+# - configure_manila_backend_glusterfs
 # - stop_glusterfs
 # - cleanup_glusterfs
 
@@ -30,10 +31,16 @@ CONFIGURE_GLUSTERFS_GLANCE=${CONFIGURE_GLUSTERFS_GLANCE:-False}
 # Set CONFIGURE_GLUSTERFS_NOVA to true, to configure GlusterFS as a backend for Nova.
 CONFIGURE_GLUSTERFS_NOVA=${CONFIGURE_GLUSTERFS_NOVA:-False}
 
+# Set CONFIGURE_GLUSTERFS_MANILA to true, to configure GlusterFS as a backend for Manila.
+CONFIGURE_GLUSTERFS_MANILA=${CONFIGURE_GLUSTERFS_MANILA:-False}
+
+# Set GLUSTERFS_MANILA_DRIVER_TYPE to either 'glusterfs' or 'glusterfs-native'.
+GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE:-glusterfs}
+
 # Error out when devstack-plugin-glusterfs is enabled, but not selected as a backend for Cinder, Glance or Nova.
-if [ "$CONFIGURE_GLUSTERFS_CINDER" = "False" ] && [ "$CONFIGURE_GLUSTERFS_GLANCE" = "False" ] && [ "$CONFIGURE_GLUSTERFS_NOVA" = "False" ];  then
-    echo "GlusterFS plugin enabled but not selected as a backend for Cinder, Glance or Nova."
-    echo "Please set CONFIGURE_GLUSTERFS_CINDER, CONFIGURE_GLUSTERFS_GLANCE and/or CONFIGURE_GLUSTERFS_NOVA to True in localrc."
+if [ "$CONFIGURE_GLUSTERFS_CINDER" = "False" ] && [ "$CONFIGURE_GLUSTERFS_GLANCE" = "False" ] && [ "$CONFIGURE_GLUSTERFS_NOVA" = "False" ] && [ "$CONFIGURE_GLUSTERFS_MANILA" = "False" ];  then
+    echo "GlusterFS plugin enabled but not selected as a backend for Cinder, Glance, Nova or Manila."
+    echo "Please set CONFIGURE_GLUSTERFS_CINDER, CONFIGURE_GLUSTERFS_GLANCE, CONFIGURE_GLUSTERFS_NOVA and/or CONFIGURE_GLUSTERFS_MANILA to True in localrc."
     exit 1
 fi
 
@@ -98,6 +105,10 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     if is_service_enabled nova && [[ "$CONFIGURE_GLUSTERFS_NOVA" == "True" ]]; then
         echo_summary "Configuring GlusterFS as a backend for Nova"
         configure_nova_backend_glusterfs
+    fi
+    if is_service_enabled manila && [[ "$CONFIGURE_GLUSTERFS_MANILA" == "True" ]]; then
+        echo_summary "Configuring GlusterFS as a backend for Manila"
+        configure_manila_backend_glusterfs
     fi
 fi
 
