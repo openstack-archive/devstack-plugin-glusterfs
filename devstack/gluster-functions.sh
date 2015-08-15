@@ -193,13 +193,73 @@ function configure_nova_backend_glusterfs {
     _mount_gluster_volume $NOVA_INSTANCES_PATH $NOVA_GLUSTERFS_SHARE
 }
 
-# Configure GlusterFS-NFS as backend for Manila
-function _configure_manila_glusterfs_nfs {
-    #TODO(BharatK): Add script to configure GlusterFS-NFS as a backend for Manila.
-    echo "Need to add script to configure GlusterFS-NFS as a backend for Manila."
+# Create Manila GlusterFS Volume
+function _create_thin_lv_pool {
+    # Create a Volume Group
+    init_lvm_volume_group $GLUSTERFS_VG_NAME 20G
+
+    # Create a think pool
+    sudo lvcreate -l 5110 -T $GLUSTERFS_VG_NAME/$GLUSTERFS_THIN_POOL_NAME
 }
 
-# Configure GlusterFS-Native as backend for Manila
+# Creating Thin LV
+function _create_thin_lv_gluster_vol {
+    local vol_name=$1
+    local vol_size=$2
+
+    sudo lvcreate -V $vol_size -T $GLUSTERFS_VG_NAME/$GLUSTERFS_THIN_POOL_NAME -n $vol_name
+
+    # Format the LV.
+    sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name
+
+    # Mount the filesystem
+    mkdir -p $MANILA_STATE_PATH/export/$vol_name
+    sudo mount /dev/$GLUSTERFS_VG_NAME/$vol_name $MANILA_STATE_PATH/export/$vol_name
+
+    # Create a directory that would serve as a brick.
+    sudo mkdir -p $MANILA_STATE_PATH/export/$vol_name/brick
+
+    # Create a GlusterFS Volume.
+    sudo gluster --mode=script vol create $vol_name $(hostname):$MANILA_STATE_PATH/export/$vol_name/brick
+
+    # Start gluster volume
+    sudo gluster --mode=script volume start $vol_name
+}
+
+# Configure manila.conf to use glusterfs.py driver
+function _configure_manila_glusterfs {
+    local share_driver=manila.share.drivers.glusterfs.GlusterfsShareDriver
+    local group_name=$1
+    local gluster_vol=$2
+
+    iniset $MANILA_CONF $group_name share_driver $share_driver
+    iniset $MANILA_CONF $group_name share_backend_name GLUSTERFS
+    iniset $MANILA_CONF $group_name glusterfs_target $(hostname):/$gluster_vol
+    iniset $MANILA_CONF $group_name driver_handles_share_servers False
+}
+
+# Configure glusterfs.py as backend driver for Manila
+function _configure_manila_glusterfs_nfs {
+    # Create Thin lvpool
+    _create_thin_lv_pool
+
+    # Create Gluster Volume
+    _create_thin_lv_gluster_vol manila-glusterfs-vol 20G
+
+    # Configure manila.conf
+    _configure_manila_glusterfs glusternfs1 manila-glusterfs-vol
+
+    # Setting enabled_share_protocols to NFS
+    iniset $MANILA_CONF DEFAULT enabled_share_protocols NFS
+
+    # Overrinding MANILA_ENABLED_BACKENDS to have only glusternfs1 backend
+    MANILA_ENABLED_BACKENDS=glusternfs1
+
+    # Setting enabled_share_backends
+    iniset $MANILA_CONF DEFAULT enabled_share_backends $MANILA_ENABLED_BACKENDS
+}
+
+# Configure glusterfsnative.py as backend driver for Manila
 function _configure_manila_glusterfs_native {
     #TODO(BharatK): Add script to configure GlusterFS-Native as a backend for Manila.
     echo "Need to add script to configure GlusterFS-Native as a backend for Manila."
