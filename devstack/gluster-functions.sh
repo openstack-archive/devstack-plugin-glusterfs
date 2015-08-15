@@ -192,3 +192,24 @@ function configure_nova_backend_glusterfs {
 
     _mount_gluster_volume $NOVA_INSTANCES_PATH $NOVA_GLUSTERFS_SHARE
 }
+
+# Configure GlusterFS-NFS as backend for Manila
+function _configure_manila_glusterfs_nfs {
+    #TODO(BharatK): Add script to configure GlusterFS-NFS as a backend for Manila.
+    echo "Need to add script to configure GlusterFS-NFS as a backend for Manila."
+}
+
+# Configure GlusterFS-Native as backend for Manila
+function _configure_manila_glusterfs_native {
+    #TODO(BharatK): Add script to configure GlusterFS-Native as a backend for Manila.
+    echo "Need to add script to configure GlusterFS-Native as a backend for Manila."
+}
+
+# Configure GlusterFS as a backend for Manila
+function configure_manila_backend_glusterfs {
+    if [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs" ]]; then
+        _configure_manila_glusterfs_nfs
+    else
+        _configure_manila_glusterfs_native
+    fi
+}
