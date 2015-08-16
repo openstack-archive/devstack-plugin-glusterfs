@@ -259,10 +259,70 @@ function _configure_manila_glusterfs_nfs {
     iniset $MANILA_CONF DEFAULT enabled_share_backends $MANILA_ENABLED_BACKENDS
 }
 
-# Configure glusterfsnative.py as backend driver for Manila
+
+# Create necessary files required to support GlusterFS's TLS feature for the
+# GlusterFS server running on the local host.
+# Require a common name for the signed certificate that the function creates to
+# be passed as a parameter.
+function _configure_glusterfs_server_in_local_host_for_tls_support {
+
+    local common_name=$1
+
+    # Generate a private key.
+    sudo openssl genrsa -out /etc/ssl/glusterfs.key 2048
+
+    # Generate self-signed certicate with the common name passed to the
+    # function.
+    sudo openssl req -new -x509 -key /etc/ssl/glusterfs.key -subj /CN=$common_name -out /etc/ssl/glusterfs.pem
+
+    # Create certificate authority file.
+    sudo cp /etc/ssl/glusterfs.pem /etc/ssl/glusterfs.ca
+
+}
+
+# Setup and configure glusterfs_native.py as the backend share driver for Manila
 function _configure_manila_glusterfs_native {
-    #TODO(BharatK): Add script to configure GlusterFS-Native as a backend for Manila.
-    echo "Need to add script to configure GlusterFS-Native as a backend for Manila."
+
+
+    # Create necessary files to allow GlusterFS volumes to use TLS features
+    local common_name=server.com
+    _configure_glusterfs_server_in_local_host_for_tls_support $common_name
+
+    # Create four GlusterFS volumes to be used as shares.
+    _create_thin_lv_pool
+
+    for i in `seq 1 20`; do
+        _create_thin_lv_gluster_vol manila-glusterfs-native-vol-20G-$i 20G
+        # Configure the volume to use GlusterFS's TLS support required by the
+        # native driver.
+        sudo gluster vol set manila-glusterfs-native-vol-20G-$i auth.ssl-allow $common_name
+    done
+
+    # Configure manila.conf.
+    local share_driver=manila.share.drivers.glusterfs_native.GlusterfsNativeShareDriver
+    local group_name=glusternative1
+    # Set "glusterfs_volume_pattern" option to be
+    # "manila-glusterfs-native-vol-#{size}G-\d+$".
+    local glusterfs_volume_pattern=manila-glusterfs-native-vol-#{size}G-\\\\d+$
+
+    iniset $MANILA_CONF $group_name share_driver $share_driver
+    iniset $MANILA_CONF $group_name share_backend_name GLUSTERFSNATIVE
+    iniset $MANILA_CONF $group_name glusterfs_servers $(hostname)
+    iniset $MANILA_CONF $group_name driver_handles_share_servers False
+    iniset $MANILA_CONF $group_name glusterfs_volume_pattern $glusterfs_volume_pattern
+
+    # Set enabled_share_protocols to be GLUSTERFS that is used by
+    # glusterfs_native driver.
+    iniset $MANILA_CONF DEFAULT enabled_share_protocols GLUSTERFS
+
+
+    # Override MANILA_ENABLED_BACKENDS used in manila's devstack plugin.
+    # This allows glusternative1 to be recognized as the enabled backend for
+    # manila in the stack.sh run.
+    MANILA_ENABLED_BACKENDS=$group_name
+
+    # Set enabled_share_backends
+    iniset $MANILA_CONF DEFAULT enabled_share_backends $group_name
 }
 
 # Configure GlusterFS as a backend for Manila
