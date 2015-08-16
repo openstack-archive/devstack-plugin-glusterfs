@@ -259,10 +259,35 @@ function _configure_manila_glusterfs_nfs {
     iniset $MANILA_CONF DEFAULT enabled_share_backends $MANILA_ENABLED_BACKENDS
 }
 
-# Configure glusterfsnative.py as backend driver for Manila
+# Setup and configure glusterfs_native.py as the backend share driver for Manila
 function _configure_manila_glusterfs_native {
-    #TODO(BharatK): Add script to configure GlusterFS-Native as a backend for Manila.
-    echo "Need to add script to configure GlusterFS-Native as a backend for Manila."
+
+    # Create a pool of four GlusterFS volumes to be used as shares
+    _create_thin_lv_pool
+    for i in `seq 1 4`
+    _create_thin_lv_gluster_vol manila-glusterfs-native-vol-20G-$i 20G
+
+    # configuring manila.conf
+    local share_driver=manila.share.drivers.glusterfs_native.GlusterfsNativeShareDriver
+    local group_name=glusternative1
+    local glusterfs_volume_pattern=manila-glusterfs-native-vol-#{size}G-\d+$
+
+    iniset $MANILA_CONF $group_name share_driver $share_driver
+    iniset $MANILA_CONF $group_name share_backend_name GLUSTERFSNATIVE
+    iniset $MANILA_CONF $group_name glusterfs_servers $(hostname)
+    iniset $MANILA_CONF $group_name driver_handles_share_servers False
+    iniset $MANILA_CONF $group_name glusterfs_volume_pattern $glusterfs_volume_pattern
+
+    # Setting enabled_share_protocols to GLUSTERFS used by glusterfs_native driver
+    iniset $MANILA_CONF DEFAULT enabled_share_protocols GLUSTERFS
+
+
+    # Overriding MANILA_ENABLED_BACKENDS used in manila's devstack plugin to
+    # recognize glusternative1 as the enabled backend.
+    MANILA_ENABLED_BACKENDS=$group_name
+
+    # Setting enabled_share_backends
+    iniset $MANILA_CONF DEFAULT enabled_share_backends $group_name
 }
 
 # Configure GlusterFS as a backend for Manila
