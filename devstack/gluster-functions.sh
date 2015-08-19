@@ -25,10 +25,6 @@ function install_glusterfs {
     fi
 
     _create_glusterfs_disk
-
-    # Changing file permissions of glusterfs logs.
-    # This avoids creation of zero sized glusterfs log files while running CI job (Bug: 1455951).
-    sudo chmod 755 -R /var/log/glusterfs/
 }
 
 # Start gluster service

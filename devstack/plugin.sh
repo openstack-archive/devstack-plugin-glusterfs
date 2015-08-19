@@ -127,6 +127,10 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring GlusterFS as a backend for Manila"
         configure_manila_backend_glusterfs
     fi
+elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
+    # Changing file permissions of glusterfs logs.
+    # This avoids creation of zero sized glusterfs log files while running CI job (Bug: 1455951).
+    sudo chmod 755 -R /var/log/glusterfs/
 fi
 
 if [[ "$1" == "unstack" ]]; then
