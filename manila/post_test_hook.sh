@@ -27,6 +27,7 @@ if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
     local BACKEND_NAME="GLUSTERNATIVE"
     iniset $BASE/new/tempest/etc/tempest.conf share enable_protocols glusterfs
     iniset $BASE/new/tempest/etc/tempest.conf share storage_protocol GLUSTERFS
+    iniset $BASE/new/tempest/etc/tempest.conf share enable_cert_rules_for_protocols glusterfs
 else
     local BACKEND_NAME="GLUSTERFS"
     iniset $BASE/new/tempest/etc/tempest.conf share enable_protocols nfs
