@@ -33,8 +33,8 @@ fi
 # Tempest creates isolated networks and created vm's in scenario tests don't
 # have access to Nova Metadata service. This leads to unavailability of
 # created vm's in scenario tests.
-echo '[[post-config|$Q_DHCP_CONF_FILE]]' >> $localrc_path
-echo '[DEFAULT]' >> $localrc_path
+#echo '[[post-config|$Q_DHCP_CONF_FILE]]' >> $localrc_path
+#echo '[DEFAULT]' >> $localrc_path
 echo "enable_isolated_metadata=True" >> $localrc_path
 
 # Go to Tempest dir and checkout stable commit to avoid possible
