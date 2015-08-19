@@ -91,6 +91,10 @@ function cleanup_glusterfs {
         _delete_gluster_shares $CINDER_GLUSTERFS_SHARES
     fi
 
+    # Cleaning up Cinder Backup GlusterFS shares
+    if [ "$CONFIGURE_GLUSTERFS_BACKUP" = "True" ]; then
+        _delete_gluster_shares $CINDER_GLUSTERFS_BACKUP_SHARE
+    fi
     # Cleaning up Glance GlusterFS share
     if [ "$CONFIGURE_GLUSTERFS_GLANCE" = "True" ]; then
         _delete_gluster_shares $GLANCE_GLUSTERFS_SHARE
@@ -164,6 +168,16 @@ function configure_cinder_backend_glusterfs {
         CINDER_GLUSTERFS_SHARES=$(echo $CINDER_GLUSTERFS_SHARES | tr ";" "\n")
         echo "$CINDER_GLUSTERFS_SHARES" | tee "$CINDER_CONF_DIR/glusterfs-shares-$be_name.conf"
     fi
+}
+
+
+# Configure GlusterFS as Cinder backup target
+# Triggered from plugin.sh
+function configure_cinder_backup_backend_glusterfs {
+    _create_gluster_volumes $CINDER_GLUSTERFS_BACKUP_SHARE
+
+    iniset $CINDER_CONF DEFAULT backup_driver "cinder.backup.drivers.glusterfs"
+    iniset $CINDER_CONF DEFAULT glusterfs_backup_share "$CINDER_GLUSTERFS_BACKUP_SHARE"
 }
 
 # Mount gluster volume
