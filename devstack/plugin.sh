@@ -13,6 +13,7 @@
 # - install_glusterfs
 # - start_glusterfs
 # - configure_cinder_backend_glusterfs
+# - configure_cinder_backup_backend_glusterfs
 # - configure_glance_backend_glusterfs
 # - configure_nova_backend_glusterfs
 # - configure_manila_backend_glusterfs
@@ -24,6 +25,9 @@
 
 # Set CONFIGURE_GLUSTERFS_CINDER to true, to enable GlusterFS as a backend for Cinder.
 CONFIGURE_GLUSTERFS_CINDER=${CONFIGURE_GLUSTERFS_CINDER:-True}
+
+# Set CONFIGURE_GLUSTERFS_BACKUP to true, to configure GlusterFS as a backup driver for Cinder.
+CONFIGURE_GLUSTERFS_BACKUP=${CONFIGURE_GLUSTERFS_BACKUP:-$CONFIGURE_GLUSTERFS_CINDER}
 
 # Set CONFIGURE_GLUSTERFS_GLANCE to true, to configure GlusterFS as a backend for Glance.
 CONFIGURE_GLUSTERFS_GLANCE=${CONFIGURE_GLUSTERFS_GLANCE:-False}
@@ -44,9 +48,9 @@ GLUSTERFS_VG_NAME=${GLUSTERFS_VG_NAME:-glusterfs-vg}
 GLUSTERFS_THIN_POOL_NAME=${GLUSTERFS_THIN_POOL_NAME:-glusterfs-thinpool}
 
 # Error out when devstack-plugin-glusterfs is enabled, but not selected as a backend for Cinder, Glance or Nova.
-if [ "$CONFIGURE_GLUSTERFS_CINDER" = "False" ] && [ "$CONFIGURE_GLUSTERFS_GLANCE" = "False" ] && [ "$CONFIGURE_GLUSTERFS_NOVA" = "False" ] && [ "$CONFIGURE_GLUSTERFS_MANILA" = "False" ];  then
+if [ "$CONFIGURE_GLUSTERFS_CINDER" = "False" ] && [ "$CONFIGURE_GLUSTERFS_GLANCE" = "False" ] && [ "$CONFIGURE_GLUSTERFS_NOVA" = "False" ] && [ "$CONFIGURE_GLUSTERFS_MANILA" = "False" && [ "$CONFIGURE_GLUSTERFS_BACKUP" = "False" ];  then
     echo "GlusterFS plugin enabled but not selected as a backend for Cinder, Glance, Nova or Manila."
-    echo "Please set CONFIGURE_GLUSTERFS_CINDER, CONFIGURE_GLUSTERFS_GLANCE, CONFIGURE_GLUSTERFS_NOVA and/or CONFIGURE_GLUSTERFS_MANILA to True in localrc."
+    echo "Please set CONFIGURE_GLUSTERFS_CINDER, CONFIGURE_GLUSTERFS_BACKUP, CONFIGURE_GLUSTERFS_GLANCE, CONFIGURE_GLUSTERFS_NOVA and/or CONFIGURE_GLUSTERFS_MANILA to True in localrc."
     exit 1
 fi
 
@@ -88,6 +92,9 @@ GLUSTERFS_LOOPBACK_DISK_SIZE=${GLUSTERFS_LOOPBACK_DISK_SIZE:-4G}
 # By default CINDER_GLUSTERFS_SHARES="127.0.0.1:/vol1"
 CINDER_GLUSTERFS_SHARES=${CINDER_GLUSTERFS_SHARES:-"127.0.0.1:/cinder-vol"}
 
+# GlusterFS shares for Cinder backup
+CINDER_GLUSTERFS_BACKUP_SHARE=${CINDER_GLUSTERFS_BACKUP_SHARE:-"127.0.0.1:/backup_vol"}
+
 # Glance GlusterFS share
 GLANCE_GLUSTERFS_SHARE=${GLANCE_GLUSTERFS_SHARE:-"127.0.0.1:/glance-vol"}
 
@@ -104,6 +111,10 @@ if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
     echo_summary "Installing GlusterFS"
     install_glusterfs
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
+    if is_service_enabled c-bak && [[ "$CONFIGURE_GLUSTERFS_BACKUP" == "True" ]]; then
+        echo_summary "Configuring GlusterFS as a backend for Cinder backup driver"
+        configure_cinder_backup_backend_glusterfs
+    fi
     if is_service_enabled glance && [[ "$CONFIGURE_GLUSTERFS_GLANCE" == "True" ]]; then
         echo_summary "Configuring GlusterFS as a backend for Glance"
         configure_glance_backend_glusterfs
