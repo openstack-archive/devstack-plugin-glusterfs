@@ -69,6 +69,10 @@ iniset $BASE/new/tempest/etc/tempest.conf share multitenancy_enabled False
 RUN_MANILA_SNAPSHOT_TESTS=${RUN_MANILA_SNAPSHOT_TESTS:-False}
 iniset $BASE/new/tempest/etc/tempest.conf share run_snapshot_tests $RUN_MANILA_SNAPSHOT_TESTS
 
+# Disable consistency group tests
+RUN_MANILA_CG_TESTS=${RUN_MANILA_CG_TESTS:-False}
+iniset $BASE/new/tempest/etc/tempest.conf share run_consistency_group_tests $RUN_MANILA_CG_TESTS
+
 # let us control if we die or not
 set +o errexit
 cd $BASE/new/tempest
