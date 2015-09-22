@@ -26,7 +26,7 @@ source $BASE/new/devstack/functions
 if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
     local BACKEND_NAME="GLUSTERNATIVE"
     iniset $BASE/new/tempest/etc/tempest.conf share enable_protocols glusterfs
-    iniset $BASE/new/tempest/etc/tempest.conf share storage_protocol GLUSTERFS
+    iniset $BASE/new/tempest/etc/tempest.conf share storage_protocol glusterfs
     # Disable tempest config option that enables creation of 'ip' type access
     # rules by default during tempest test runs.
     iniset $BASE/new/tempest/etc/tempest.conf share enable_ip_rules_for_protocols
