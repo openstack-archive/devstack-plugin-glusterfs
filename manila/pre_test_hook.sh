@@ -29,6 +29,15 @@ else
     echo "MANILA_MULTI_BACKEND=False" >> $localrc_path
 fi
 
+# If the job tests glusterfs (NFS) driver, then create default share_type with
+# extra_spec snapshot_support as False. Becasuse the job that tests the
+# glusterfs (NFS) driver tests the directory based layout that doesn't support
+# snapshots. The job that tests glusterfs (NFS) driver has a name that
+# ends with "glusterfs".
+if [[ $JOB_NAME =~ manila-tempest-dsvm-glusterfs$ ]]; then
+    echo "MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS='snapshot_support=False'" >> $localrc_path
+fi
+
 # Enabling isolated metadata in Neutron is required because
 # Tempest creates isolated networks and created vm's in scenario tests don't
 # have access to Nova Metadata service. This leads to unavailability of
