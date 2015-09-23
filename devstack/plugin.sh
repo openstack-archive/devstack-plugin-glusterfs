@@ -108,8 +108,13 @@ GLUSTERFS_CENTOS_REPO=${GLUSTERFS_CENTOS_REPO:-"http://download.gluster.org/pub/
 source $GLUSTERFS_PLUGIN_DIR/gluster-functions.sh
 
 if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
-    echo_summary "Installing GlusterFS"
-    install_glusterfs
+    if is_service_enabled manila && [[ "$CONFIGURE_GLUSTERFS_MANILA" == "True" ]]; then
+        echo_summary "Installing GlusterFS 3.7"
+        install_glusterfs 3.7
+    else
+        echo_summary "Installing GlusterFS 3.6"
+        install_glusterfs 3.6
+    fi
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     if is_service_enabled c-bak && [[ "$CONFIGURE_GLUSTERFS_BACKUP" == "True" ]]; then
         echo_summary "Configuring GlusterFS as a backend for Cinder backup driver"
