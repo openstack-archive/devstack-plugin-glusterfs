@@ -254,7 +254,7 @@ function _configure_manila_glusterfs_nfs {
     _create_thin_lv_pool
 
     # Create Gluster Volume
-    _create_thin_lv_gluster_vol manila-glusterfs-vol 20G
+    _create_thin_lv_gluster_vol manila-glusterfs-vol 50G
 
     # Configure manila.conf
     _configure_manila_glusterfs glusternfs1 manila-glusterfs-vol
