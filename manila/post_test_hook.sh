@@ -31,6 +31,7 @@ if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
     # rules by default during tempest test runs.
     iniset $BASE/new/tempest/etc/tempest.conf share enable_ip_rules_for_protocols
     iniset $BASE/new/tempest/etc/tempest.conf share enable_cert_rules_for_protocols glusterfs
+    iniset $BASE/new/tempest/etc/tempest.conf share capability_snapshot_support False
 else
     local BACKEND_NAME="GLUSTERFS"
     iniset $BASE/new/tempest/etc/tempest.conf share enable_protocols nfs
