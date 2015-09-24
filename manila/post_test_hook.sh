@@ -69,9 +69,15 @@ iniset $BASE/new/tempest/etc/tempest.conf share run_shrink_tests $RUN_MANILA_SHR
 # Disable multi_tenancy tests
 iniset $BASE/new/tempest/etc/tempest.conf share multitenancy_enabled False
 
-# Disable snapshot tests
+# Disable snapshot tests for glusterfs (NFS) CI as the NFS driver does not
+# support snapshots, and enable snapshot tests for glusterfs_native CI as the
+# native driver supports snapshot features.
 RUN_MANILA_SNAPSHOT_TESTS=${RUN_MANILA_SNAPSHOT_TESTS:-False}
+if [[ $JOB_NAME =~ glusterfs-native$ ]]; then
+    RUN_MANILA_SNAPSHOT_TESTS=True
+fi
 iniset $BASE/new/tempest/etc/tempest.conf share run_snapshot_tests $RUN_MANILA_SNAPSHOT_TESTS
+
 
 # Disable consistency group tests
 RUN_MANILA_CG_TESTS=${RUN_MANILA_CG_TESTS:-False}
