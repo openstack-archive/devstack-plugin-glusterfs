@@ -133,6 +133,25 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         configure_manila_backend_glusterfs
     fi
 elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
+    if is_service_enabled manila && [[ "$CONFIGURE_GLUSTERFS_MANILA" == "True" ]]; then
+        manila \
+            --debug \
+            --os-auth-url $KEYSTONE_AUTH_URI/v2.0 \
+            --os-tenant-name ${OS_PROJECT_NAME:-$OS_TENANT_NAME} \
+            --os-username $OS_USERNAME \
+            --os-password $OS_PASSWORD \
+            --os-region-name $OS_REGION_NAME \
+            extra-specs-list
+        manila \
+            --debug \
+            --os-auth-url $KEYSTONE_AUTH_URI/v2.0 \
+            --os-tenant-name ${OS_PROJECT_NAME:-$OS_TENANT_NAME} \
+            --os-username $OS_USERNAME \
+            --os-password $OS_PASSWORD \
+            --os-region-name $OS_REGION_NAME \
+            type-list
+        echo "RAMANA"
+    fi
     # Changing file permissions of glusterfs logs.
     # This avoids creation of zero sized glusterfs log files while running CI job (Bug: 1455951).
     sudo chmod 755 -R /var/log/glusterfs/
