@@ -300,7 +300,13 @@ function _configure_manila_glusterfs_native {
 
 
     # Create necessary files to allow GlusterFS volumes to use TLS features
-    local common_name=server.com
+    # Common name of the TLS certificate needs to have a prefix
+    # 'glusterfs-server' for create_share_from_snapshot to work
+    # correctly. Please see,
+    # https://github.com/openstack/manila/commit/8855f78e2224afc3cf5b3089cf7c0743bbeb65c3
+    # for more details.
+
+    local common_name=glusterfs-server-00
     _configure_glusterfs_server_in_local_host_for_tls_support $common_name
 
     # Create four GlusterFS volumes to be used as shares.
