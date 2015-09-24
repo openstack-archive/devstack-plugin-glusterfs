@@ -225,7 +225,21 @@ function _create_thin_lv_gluster_vol {
     sudo lvcreate -V $vol_size -T $GLUSTERFS_VG_NAME/$GLUSTERFS_THIN_POOL_NAME -n $vol_name
 
     # Format the LV.
-    sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name
+    local mkfs_result=0
+    for i in `seq 100`; do
+        mkfs_result=0
+        sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name || mkfs_result=$?
+        [ $mkfs_result -eq 0 ] && break
+        sleep 0.1
+    done
+    local mkfs_duration="$((i/10)).$((i%10))"
+    if [ $mkfs_result -eq 0 ]; then
+        echo "mkfs.xfs succeeded after $mkfs_duration"
+        true
+    else
+        echo "giving up on mkfs.xfs after retrying $mkfs_duration with exit code $mkfs_result"
+        false
+    fi
 
     # Mount the filesystem
     mkdir -p $MANILA_STATE_PATH/export/$vol_name
