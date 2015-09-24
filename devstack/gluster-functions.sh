@@ -320,7 +320,7 @@ function _configure_manila_glusterfs_native {
     # Create four GlusterFS volumes to be used as shares.
     _create_thin_lv_pool
 
-    for i in `seq 1 20`; do
+    for i in `seq 1 50`; do
         _create_thin_lv_gluster_vol manila-glusterfs-native-vol-20G-$i 20G
         # Configure the volume to use GlusterFS's TLS support required by the
         # native driver.
