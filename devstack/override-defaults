@@ -1,4 +1,6 @@
 # Plug-in overrides
 
-CINDER_ENABLED_BACKENDS=${CINDER_ENABLED_BACKENDS:-glusterfs:glusterfs,lvm:lvm1}
-
+# Configure glusterfs as a backend for Cinder only when CONFIGURE_GLUSTERFS_CINDER is True.
+if [ "$CONFIGURE_GLUSTERFS_CINDER" = "True" ]; then
+    CINDER_ENABLED_BACKENDS=${CINDER_ENABLED_BACKENDS:-glusterfs:glusterfs,lvm:lvm1}
+fi
