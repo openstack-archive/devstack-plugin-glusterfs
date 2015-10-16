@@ -112,8 +112,8 @@ if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
         echo_summary "Installing GlusterFS 3.7"
         install_glusterfs 3.7
     else
-        echo_summary "Installing GlusterFS 3.6"
-        install_glusterfs 3.6
+        echo_summary "Installing GlusterFS 3.7"
+        install_glusterfs 3.7
     fi
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     if is_service_enabled c-bak && [[ "$CONFIGURE_GLUSTERFS_BACKUP" == "True" ]]; then
