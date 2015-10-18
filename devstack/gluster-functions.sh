@@ -93,7 +93,7 @@ function cleanup_glusterfs {
     fi
 
     # Cleaning up Cinder Backup GlusterFS shares
-    if [ "$CONFIGURE_GLUSTERFS_BACKUP" = "True" ]; then
+    if [ "$CONFIGURE_GLUSTERFS_CINDER_BACKUP" = "True" ]; then
         _delete_gluster_shares $CINDER_GLUSTERFS_BACKUP_SHARE
     fi
     # Cleaning up Glance GlusterFS share
