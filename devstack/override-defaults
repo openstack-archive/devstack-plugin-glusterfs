@@ -1,4 +1,0 @@
-# Plug-in overrides
-
-CINDER_ENABLED_BACKENDS=${CINDER_ENABLED_BACKENDS:-glusterfs:glusterfs,lvm:lvm1}
-
