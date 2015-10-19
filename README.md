@@ -1,5 +1,5 @@
 Devstack GlusterFS Plugin
-================
+=========================
 
 # Goals
 
@@ -11,5 +11,5 @@ Devstack GlusterFS Plugin
 
 # How to use
 
-* Add "enable_plugin glusterfs https://github.com/stackforge/devstack-plugin-glusterfs" to localrc file inside devstack.
+* Add "enable_plugin glusterfs https://git.openstack.org/openstack/devstack-plugin-glusterfs" to localrc file inside devstack.
 * Then run "stack.sh"
