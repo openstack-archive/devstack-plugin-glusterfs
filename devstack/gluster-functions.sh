@@ -75,6 +75,7 @@ function _delete_gluster_shares {
         gluster_volumes+=,$(echo $share | cut -d/ -f2);
     done
 
+    local vol_name
     for vol_name in $(echo $gluster_volumes | sed "s/,/ /g"); do
         sudo gluster --mode=script volume stop $vol_name
         sudo gluster --mode=script volume delete $vol_name
@@ -226,6 +227,7 @@ function _create_thin_lv_gluster_vol {
 
     # Format the LV.
     local mkfs_result=0
+    local i
     for i in `seq 100`; do
         mkfs_result=0
         sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name || mkfs_result=$?
@@ -320,6 +322,7 @@ function _configure_manila_glusterfs_native {
     # Create four GlusterFS volumes to be used as shares.
     _create_thin_lv_pool
 
+    local i
     for i in `seq 1 20`; do
         _create_thin_lv_gluster_vol manila-glusterfs-native-vol-20G-$i 20G
         # Configure the volume to use GlusterFS's TLS support required by the
