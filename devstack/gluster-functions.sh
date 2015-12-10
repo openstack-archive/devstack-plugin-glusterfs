@@ -226,26 +226,11 @@ function _create_thin_lv_gluster_vol {
     sudo lvcreate -V $vol_size -T $GLUSTERFS_VG_NAME/$GLUSTERFS_THIN_POOL_NAME -n $vol_name
 
     # Format the LV.
-    local mkfs_result=0
-    local i
-    for i in `seq 100`; do
-        mkfs_result=0
-        sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name || mkfs_result=$?
-        [ $mkfs_result -eq 0 ] && break
-        sleep 0.1
-    done
-    local mkfs_duration="$((i/10)).$((i%10))"
-    if [ $mkfs_result -eq 0 ]; then
-        echo "mkfs.xfs succeeded after retrying for $mkfs_duration"
-        true
-    else
-        echo "giving up on mkfs.xfs after retrying for $mkfs_duration with exit code $mkfs_result"
-        false
-    fi
+    test_with_retry "sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name" "mkfs.xfs failed"
 
     # Mount the filesystem
     mkdir -p $MANILA_STATE_PATH/export/$vol_name
-    sudo mount /dev/$GLUSTERFS_VG_NAME/$vol_name $MANILA_STATE_PATH/export/$vol_name
+    test_with_retry "sudo mount /dev/$GLUSTERFS_VG_NAME/$vol_name $MANILA_STATE_PATH/export/$vol_name" "mounting XFS on the LV failed"
 
     # Create a directory that would serve as a brick.
     sudo mkdir -p $MANILA_STATE_PATH/export/$vol_name/brick
