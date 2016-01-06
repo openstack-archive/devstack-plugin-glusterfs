@@ -14,6 +14,8 @@
 
 # This script is executed inside post_test_hook function in devstack gate.
 
+TEMPEST_CONFIG=$BASE/new/tempest/etc/tempest.conf
+
 sudo chown -R jenkins:stack $BASE/new/tempest
 sudo chown -R jenkins:stack $BASE/data/tempest
 sudo chmod -R o+rx $BASE/new/devstack/files
@@ -25,57 +27,57 @@ source $BASE/new/devstack/functions
 
 if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
     local BACKEND_NAME="GLUSTERNATIVE"
-    iniset $BASE/new/tempest/etc/tempest.conf share enable_protocols glusterfs
-    iniset $BASE/new/tempest/etc/tempest.conf share storage_protocol glusterfs
+    iniset $TEMPEST_CONFIG share enable_protocols glusterfs
+    iniset $TEMPEST_CONFIG share storage_protocol glusterfs
     # Disable tempest config option that enables creation of 'ip' type access
     # rules by default during tempest test runs.
-    iniset $BASE/new/tempest/etc/tempest.conf share enable_ip_rules_for_protocols
-    iniset $BASE/new/tempest/etc/tempest.conf share enable_cert_rules_for_protocols glusterfs
-    iniset $BASE/new/tempest/etc/tempest.conf share capability_snapshot_support True
+    iniset $TEMPEST_CONFIG share enable_ip_rules_for_protocols
+    iniset $TEMPEST_CONFIG share enable_cert_rules_for_protocols glusterfs
+    iniset $TEMPEST_CONFIG share capability_snapshot_support True
 else
     local BACKEND_NAME="GLUSTERFS"
-    iniset $BASE/new/tempest/etc/tempest.conf share enable_protocols nfs
-    iniset $BASE/new/tempest/etc/tempest.conf share enable_ip_rules_for_protocols nfs
-    iniset $BASE/new/tempest/etc/tempest.conf share storage_protocol NFS
+    iniset $TEMPEST_CONFIG share enable_protocols nfs
+    iniset $TEMPEST_CONFIG share enable_ip_rules_for_protocols nfs
+    iniset $TEMPEST_CONFIG share storage_protocol NFS
 fi
 
 
-iniset $BASE/new/tempest/etc/tempest.conf share backend_names $BACKEND_NAME
+iniset $TEMPEST_CONFIG share backend_names $BACKEND_NAME
 
 # Set two retries for CI jobs
-iniset $BASE/new/tempest/etc/tempest.conf share share_creation_retry_number 2
+iniset $TEMPEST_CONFIG share share_creation_retry_number 2
 
 # Suppress errors in cleanup of resources
 SUPPRESS_ERRORS=${SUPPRESS_ERRORS_IN_CLEANUP:-True}
-iniset $BASE/new/tempest/etc/tempest.conf share suppress_errors_in_cleanup $SUPPRESS_ERRORS
+iniset $TEMPEST_CONFIG share suppress_errors_in_cleanup $SUPPRESS_ERRORS
 
 
 # Disable multi_backend tests
 RUN_MANILA_MULTI_BACKEND_TESTS=${RUN_MANILA_MULTI_BACKEND_TESTS:-False}
-iniset $BASE/new/tempest/etc/tempest.conf share multi_backend $RUN_MANILA_MULTI_BACKEND_TESTS
+iniset $TEMPEST_CONFIG share multi_backend $RUN_MANILA_MULTI_BACKEND_TESTS
 
 # Disable manage/unmanage tests
 RUN_MANILA_MANAGE_TESTS=${RUN_MANILA_MANAGE_TESTS:-False}
-iniset $BASE/new/tempest/etc/tempest.conf share run_manage_unmanage_tests $RUN_MANILA_MANAGE_TESTS
+iniset $TEMPEST_CONFIG share run_manage_unmanage_tests $RUN_MANILA_MANAGE_TESTS
 
 # Disable extend tests
 RUN_MANILA_EXTEND_TESTS=${RUN_MANILA_EXTEND_TESTS:-False}
-iniset $BASE/new/tempest/etc/tempest.conf share run_extend_tests $RUN_MANILA_EXTEND_TESTS
+iniset $TEMPEST_CONFIG share run_extend_tests $RUN_MANILA_EXTEND_TESTS
 
 # Disable shrink tests
 RUN_MANILA_SHRINK_TESTS=${RUN_MANILA_SHRINK_TESTS:-False}
-iniset $BASE/new/tempest/etc/tempest.conf share run_shrink_tests $RUN_MANILA_SHRINK_TESTS
+iniset $TEMPEST_CONFIG share run_shrink_tests $RUN_MANILA_SHRINK_TESTS
 
 # Disable multi_tenancy tests
-iniset $BASE/new/tempest/etc/tempest.conf share multitenancy_enabled False
+iniset $TEMPEST_CONFIG share multitenancy_enabled False
 
 # Disable snapshot tests
 RUN_MANILA_SNAPSHOT_TESTS=${RUN_MANILA_SNAPSHOT_TESTS:-False}
-iniset $BASE/new/tempest/etc/tempest.conf share run_snapshot_tests $RUN_MANILA_SNAPSHOT_TESTS
+iniset $TEMPEST_CONFIG share run_snapshot_tests $RUN_MANILA_SNAPSHOT_TESTS
 
 # Disable consistency group tests
 RUN_MANILA_CG_TESTS=${RUN_MANILA_CG_TESTS:-False}
-iniset $BASE/new/tempest/etc/tempest.conf share run_consistency_group_tests $RUN_MANILA_CG_TESTS
+iniset $TEMPEST_CONFIG share run_consistency_group_tests $RUN_MANILA_CG_TESTS
 
 # let us control if we die or not
 set +o errexit
@@ -91,6 +93,26 @@ fi
 
 # check if tempest plugin was installed correctly
 echo 'import pkg_resources; print list(pkg_resources.iter_entry_points("tempest.test_plugins"))' | python
+
+# Workaround for Tempest architectural changes
+# See bugs:
+# 1) https://bugs.launchpad.net/manila/+bug/1531049
+# 2) https://bugs.launchpad.net/tempest/+bug/1524717
+ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-"admin"}
+ADMIN_PASSWORD=${ADMIN_PASSWORD:-"secretadmin"}
+iniset $TEMPEST_CONFIG auth admin_username ${ADMIN_USERNAME:-"admin"}
+iniset $TEMPEST_CONFIG auth admin_password $ADMIN_PASSWORD
+iniset $TEMPEST_CONFIG auth admin_tenant_name $ADMIN_TENANT_NAME
+iniset $TEMPEST_CONFIG auth admin_domain_name ${ADMIN_DOMAIN_NAME:-"Default"}
+iniset $TEMPEST_CONFIG identity username ${TEMPEST_USERNAME:-"demo"}
+iniset $TEMPEST_CONFIG identity password $ADMIN_PASSWORD
+iniset $TEMPEST_CONFIG identity tenant_name ${TEMPEST_TENANT_NAME:-"demo"}
+iniset $TEMPEST_CONFIG identity alt_username ${ALT_USERNAME:-"alt_demo"}
+iniset $TEMPEST_CONFIG identity alt_password $ADMIN_PASSWORD
+iniset $TEMPEST_CONFIG identity alt_tenant_name ${ALT_TENANT_NAME:-"alt_demo"}
+iniset $TEMPEST_CONFIG validation ip_version_for_ssh 4
+iniset $TEMPEST_CONFIG validation ssh_timeout $BUILD_TIMEOUT
+iniset $TEMPEST_CONFIG validation network_for_ssh ${PRIVATE_NETWORK_NAME:-"private"}
 
 echo "Running tempest manila test suites"
 sudo -H -u jenkins tox -eall-plugin $MANILA_TESTS -- --concurrency=$MANILA_TEMPEST_CONCURRENCY
