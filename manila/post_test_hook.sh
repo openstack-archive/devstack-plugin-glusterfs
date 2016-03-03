@@ -28,8 +28,18 @@ for env_var in ${DEVSTACK_LOCAL_CONFIG// / }; do
     export $env_var;
 done
 
-if [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs-native" ]]; then
-    local BACKEND_NAME="GLUSTERNATIVE"
+if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" =~ "glusterfs-native" ]]; then
+    case "$GLUSTERFS_MANILA_DRIVER_TYPE" in
+    "glusterfs-native")
+        local BACKEND_NAME="GLUSTERFSNATIVE"
+        ;;
+    "glusterfs-native-heketi")
+        local BACKEND_NAME="GLUSTERFNATIVEHEKETI"
+        ;;
+    *)
+        echo "no BACKEND_NAME for GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE}"
+        ;;
+    esac
     iniset $TEMPEST_CONFIG share enable_protocols glusterfs
     iniset $TEMPEST_CONFIG share storage_protocol glusterfs
     # Disable tempest config option that enables creation of 'ip' type access
