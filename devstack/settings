@@ -25,6 +25,9 @@ if [[ ${DISTRO} =~ rhel7 ]] && [[ ! -f /etc/yum.repos.d/glusterfs-epel.repo ]]; 
     GLUSTERFS_CENTOS_REPO=${GLUSTERFS_CENTOS_REPO:-"http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo"}
 fi
 
+# Official Heketi 1.0.* binary
+HEKETI_V1_PACKAGE="https://github.com/heketi/heketi/releases/download/1.0.2/heketi-1.0.2-release-1.0.0.linux.amd64.tar.gz"
+
 TEMPEST_STORAGE_PROTOCOL=glusterfs
 
 ######### Glance Specific Configuration #########

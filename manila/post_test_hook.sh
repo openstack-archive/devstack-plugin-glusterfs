@@ -35,7 +35,11 @@ if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
     iniset $TEMPEST_CONFIG share enable_cert_rules_for_protocols glusterfs
     iniset $TEMPEST_CONFIG share capability_snapshot_support True
 else
-    local BACKEND_NAME="GLUSTERFS"
+    if [[ "$JOB_NAME" =~ "glusterfs-heketi" ]]; then
+       local BACKEND_NAME="GLUSTERFSHEKETI"
+    else
+       local BACKEND_NAME="GLUSTERFS"
+    fi
     iniset $TEMPEST_CONFIG share enable_protocols nfs
     iniset $TEMPEST_CONFIG share enable_ip_rules_for_protocols nfs
     iniset $TEMPEST_CONFIG share storage_protocol NFS
