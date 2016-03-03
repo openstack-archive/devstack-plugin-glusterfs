@@ -342,9 +342,48 @@ function _configure_manila_glusterfs_native {
     iniset $MANILA_CONF DEFAULT enabled_share_backends $group_name
 }
 
+function _setup_rootssh {
+    mkdir -p "$HOME"/.ssh
+    chmod 700 "$HOME"/.ssh
+    sudo mkdir -p /root/.ssh
+    sudo chmod 700 /root/.ssh
+    yes n | ssh-keygen -f  "$HOME"/.ssh/id_rsa -N ''
+    sudo sh -c "cat >> /root/.ssh/authorized_keys" < "$HOME"/.ssh/id_rsa.pub
+    sudo chmod 600 /root/.ssh/authorized_keys
+}
+
+function _configure_setup_heketi {
+    # get Heketi and start service
+    wget "$HEKETI_V1_PACKAGE"
+    tar xvf "$(basename "$HEKETI_V1_PACKAGE")"
+    ( ./heketi/heketi -config "$GLUSTERFS_PLUGIN_DIR"/extras/heketi.json &>/dev/null & ) &
+
+    # basic Heketi setup
+    $GLUSTERFS_PLUGIN_DIR/extras/heketisetup.py -s 1T -n 3 -v -D $(hostname)
+}
+
+function _configure_manila_glusterfs_heketi {
+    _setup_rootssh
+    _configure_setup_heketi
+
+    # Manila config
+    local share_driver=manila.share.drivers.glusterfs.GlusterfsShareDriver
+    local group_name=glusterheketi1
+
+    iniset $MANILA_CONF $group_name share_driver $share_driver
+    iniset $MANILA_CONF $group_name share_backend_name GLUSTERFSHEKETI
+    iniset $MANILA_CONF $group_name driver_handles_share_servers False
+    iniset $MANILA_CONF $group_name glusterfs_share_layout layout_heketi.GlusterfsHeketiLayout
+    iniset $MANILA_CONF $group_name glusterfs_heketi_url http://localhost:8080
+    iniset $MANILA_CONF $group_name glusterfs_heketi_nodeadmin_username root
+    iniset $MANILA_CONF $group_name glusterfs_heketi_volume_replica 1
+}
+
 # Configure GlusterFS as a backend for Manila
 function configure_manila_backend_glusterfs {
-    if [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs" ]]; then
+    if [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs-heketi" ]]; then
+        _configure_manila_glusterfs_heketi
+    elif [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs" ]]; then
         _configure_manila_glusterfs_nfs
     else
         _configure_manila_glusterfs_native
