@@ -26,7 +26,11 @@ source $BASE/new/devstack/functions
 
 
 if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
-    local BACKEND_NAME="GLUSTERNATIVE"
+    if [[ "$JOB_NAME" =~ "heketi" ]]; then
+        local BACKEND_NAME="GLUSTERFNATIVEHEKETI"
+    else
+        local BACKEND_NAME="GLUSTERFSNATIVE"
+    fi
     iniset $TEMPEST_CONFIG share enable_protocols glusterfs
     iniset $TEMPEST_CONFIG share storage_protocol glusterfs
     # Disable tempest config option that enables creation of 'ip' type access
@@ -35,8 +39,9 @@ if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
     iniset $TEMPEST_CONFIG share enable_cert_rules_for_protocols glusterfs
     iniset $TEMPEST_CONFIG share capability_snapshot_support True
 else
-    if [[ "$JOB_NAME" =~ "glusterfs-heketi" ]]; then
+    if [[ "$JOB_NAME" =~ "heketi" ]]; then
         local BACKEND_NAME="GLUSTERFSHEKETI"
+        iniset $TEMPEST_CONFIG share capability_snapshot_support True
     else
         local BACKEND_NAME="GLUSTERFS"
     fi
