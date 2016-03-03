@@ -28,8 +28,12 @@ for env_var in ${DEVSTACK_LOCAL_CONFIG// / }; do
     export $env_var;
 done
 
-if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-native" ]]; then
-    local BACKEND_NAME="GLUSTERNATIVE"
+if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" =~ "glusterfs-native" ]]; then
+    if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" =~ "heketi" ]]; then
+        local BACKEND_NAME="GLUSTERFNATIVEHEKETI"
+    else
+        local BACKEND_NAME="GLUSTERFSNATIVE"
+    fi
     iniset $TEMPEST_CONFIG share enable_protocols glusterfs
     iniset $TEMPEST_CONFIG share storage_protocol glusterfs
     # Disable tempest config option that enables creation of 'ip' type access
@@ -40,8 +44,9 @@ if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-native" ]]; then
     # ro access_level is not supported by the driver.
     iniset $TEMPEST_CONFIG share enable_ro_access_level_for_protocols
 else
-    if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-heketi" ]]; then
+    if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" =~ "heketi" ]]; then
         local BACKEND_NAME="GLUSTERFSHEKETI"
+        iniset $TEMPEST_CONFIG share capability_snapshot_support True
     else
         local BACKEND_NAME="GLUSTERFS"
     fi
