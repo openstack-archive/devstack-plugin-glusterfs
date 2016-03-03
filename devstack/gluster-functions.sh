@@ -302,7 +302,7 @@ function _configure_glusterfs_server_in_local_host_for_tls_support {
 
 # Setup and configure glusterfs_native.py as the backend share driver for Manila
 function _configure_manila_glusterfs_native {
-
+    local share_backend=$1
 
     # Create necessary files to allow GlusterFS volumes to use TLS features
     local common_name=server.com
@@ -327,10 +327,18 @@ function _configure_manila_glusterfs_native {
     local glusterfs_volume_pattern=manila-glusterfs-native-vol-#{size}G-\\\\d+$
 
     iniset $MANILA_CONF $group_name share_driver $share_driver
-    iniset $MANILA_CONF $group_name share_backend_name GLUSTERFSNATIVE
     iniset $MANILA_CONF $group_name glusterfs_servers $(hostname)
     iniset $MANILA_CONF $group_name driver_handles_share_servers False
     iniset $MANILA_CONF $group_name glusterfs_volume_pattern $glusterfs_volume_pattern
+
+    _configure_native_common $group_name $share_backend
+}
+
+function _configure_native_common {
+    local group_name=$1
+    local share_backend=$2
+
+    iniset $MANILA_CONF $group_name share_backend_name $share_backend
 
     # Set enabled_share_protocols to be GLUSTERFS that is used by
     # glusterfs_native driver.
@@ -366,7 +374,7 @@ function _configure_setup_heketi {
     $GLUSTERFS_PLUGIN_DIR/extras/heketisetup.py -s 1T -n 3 -v -D $(hostname)
 }
 
-function _configure_manila_glusterfs_heketi {
+function _configure_manila_glusterfs_heketi_common {
     local group_name=$1
 
     _setup_rootssh
@@ -379,21 +387,36 @@ function _configure_manila_glusterfs_heketi {
     iniset $MANILA_CONF $group_name glusterfs_heketi_volume_replica 1
 }
 
+function _configure_manila_glusterfs_native_heketi {
+    install_package rsync
+
+    local group_name=$1
+
+    iniset $MANILA_CONF $group_name glusterfs_native_CA_cert "$GLUSTERFS_PLUGIN_DIR"/extras/cert/gluster_ca.pem
+    iniset $MANILA_CONF $group_name glusterfs_native_CA_key "$GLUSTERFS_PLUGIN_DIR"/extras/cert/gluster_ca-priv.pem
+    iniset $MANILA_CONF $group_name glusterfs_native_CA_passphrase marharepa
+
+    _configure_manila_glusterfs_heketi_common $group_name
+}
+
 # Configure GlusterFS as a backend for Manila
 function configure_manila_backend_glusterfs {
-    case "${GLUSTERFS_MANILA_DRIVER_TYPE} in
+    case "${GLUSTERFS_MANILA_DRIVER_TYPE}" in
     "glusterfs|glusterfs-nfs")
         _configure_manila_glusterfs_nfs GLUSTERFS
         ;;
     "glusterfs-heketi|glusterfs-nfs-heketi")
         _configure_manila_glusterfs_nfs_common glusterheketi1 GLUSTERFSHEKETI
-        _configure_manila_glusterfs_heketi glusterheketi1
+        _configure_manila_glusterfs_heketi_common glusterheketi1
         ;;
     "glusterfs-native")
-        _configure_manila_glusterfs_native
+        _configure_manila_glusterfs_native GLUSTERFSNATIVE
+        ;;
+    "glusterfs-native-heketi")
+        _configure_native_common glusterfsnativeheketi1 GLUSTERFSNATIVEHEKETI
+        _configure_manila_glusterfs_native_heketi glusterfsnativeheketi1
         ;;
     *)
         echo "no configuration hook for GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE}"
-        ;;
     esac
 }
