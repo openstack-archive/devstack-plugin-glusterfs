@@ -46,6 +46,7 @@ else
         ;;
     glusterfs-heketi|glusterfs-nfs-heketi)
         local BACKEND_NAME="GLUSTERFSHEKETI"
+        iniset $TEMPEST_CONFIG share capability_snapshot_support True
         ;;
     *)
         echo "no BACKEND_NAME for GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE}"
