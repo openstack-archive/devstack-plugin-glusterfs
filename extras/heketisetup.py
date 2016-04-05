@@ -208,7 +208,7 @@ def setup(clusters, args, h):
     for host in args.host:
         hostdevices[host] = []
         shx = ShExec(host, user=args.user, key=args.key, root=args.root)
-        for i in range(args.devices):
+        for _ in range(args.devices):
             dev, _ = shx("i=0; while [ -f /LOOP%(cluster)s-$i ]; do i=$(($i+1)); done && "
                          "truncate -s %(size)s /LOOP%(cluster)s-$i && "
                          "losetup -f --show /LOOP%(cluster)s-$i" % {'size': args.size,
@@ -226,7 +226,7 @@ def setup(clusters, args, h):
             h.asyncop("devices", json={"node": node['id'], "name": dev})
 
 
-def teardown(cliusters, args, h):
+def teardown(clusters, args, h):
     if args.cluster not in clusters:
         raise HeketiException(
             "Cluster %s not found on Heketi server." % args.cluster)
@@ -238,8 +238,15 @@ def teardown(cliusters, args, h):
         node = h.get("nodes/%s" % nodeid).json()
         for dev in node["devices"]:
             h.asyncop('devices/%s' % dev['id'], method='delete')
+            for host in node["hostnames"]["storage"]:
+                shx = ShExec(host, user=args.user, key=args.key, root=args.root)
+                qname = pipes.quote(dev['name'])
+                backfile, _ = shx("losetup --list -Oback-file --noheadings %s" % qname)
+                shx("losetup -d %s" % qname)
+                shx("rm %s" % pipes.quote(backfile.strip()))
         h.asyncop('nodes/%s' % nodeid, method='delete')
     h.delete("clusters/%s" % args.cluster)
+
 
 if __name__ == '__main__':
     import argparse
