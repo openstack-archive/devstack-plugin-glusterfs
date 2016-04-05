@@ -242,20 +242,11 @@ function _create_thin_lv_gluster_vol {
     sudo gluster --mode=script volume start $vol_name
 }
 
-# Configure manila.conf to use glusterfs.py driver
-function _configure_manila_glusterfs {
-    local share_driver=manila.share.drivers.glusterfs.GlusterfsShareDriver
-    local group_name=$1
-    local gluster_vol=$2
-
-    iniset $MANILA_CONF $group_name share_driver $share_driver
-    iniset $MANILA_CONF $group_name share_backend_name GLUSTERFS
-    iniset $MANILA_CONF $group_name glusterfs_target $(hostname):/$gluster_vol
-    iniset $MANILA_CONF $group_name driver_handles_share_servers False
-}
-
 # Configure glusterfs.py as backend driver for Manila
 function _configure_manila_glusterfs_nfs {
+    local share_backend=$1
+    local group_name=glusternfs1
+
     # Create Thin lvpool
     _create_thin_lv_pool
 
@@ -263,7 +254,19 @@ function _configure_manila_glusterfs_nfs {
     _create_thin_lv_gluster_vol manila-glusterfs-vol 200G
 
     # Configure manila.conf
-    _configure_manila_glusterfs glusternfs1 manila-glusterfs-vol
+    iniset $MANILA_CONF $group_name glusterfs_target $(hostname):/manila-glusterfs-vol
+
+    _configure_manila_glusterfs_nfs_common $group_name $share_backend
+}
+
+function _configure_manila_glusterfs_nfs_common {
+    local group_name=$1
+    local share_backend=$2
+
+    local share_driver=manila.share.drivers.glusterfs.GlusterfsShareDriver
+    iniset $MANILA_CONF $group_name share_driver $share_driver
+
+    iniset $MANILA_CONF $group_name driver_handles_share_servers False
 
     # Setting enabled_share_protocols to NFS
     iniset $MANILA_CONF DEFAULT enabled_share_protocols NFS
@@ -273,6 +276,7 @@ function _configure_manila_glusterfs_nfs {
 
     # Setting enabled_share_backends
     iniset $MANILA_CONF DEFAULT enabled_share_backends $MANILA_ENABLED_BACKENDS
+    iniset $MANILA_CONF $group_name share_backend_name $share_backend
 }
 
 
@@ -363,16 +367,12 @@ function _configure_setup_heketi {
 }
 
 function _configure_manila_glusterfs_heketi {
+    local group_name=$1
+
     _setup_rootssh
     _configure_setup_heketi
 
     # Manila config
-    local share_driver=manila.share.drivers.glusterfs.GlusterfsShareDriver
-    local group_name=glusterheketi1
-
-    iniset $MANILA_CONF $group_name share_driver $share_driver
-    iniset $MANILA_CONF $group_name share_backend_name GLUSTERFSHEKETI
-    iniset $MANILA_CONF $group_name driver_handles_share_servers False
     iniset $MANILA_CONF $group_name glusterfs_share_layout layout_heketi.GlusterfsHeketiLayout
     iniset $MANILA_CONF $group_name glusterfs_heketi_url http://localhost:8080
     iniset $MANILA_CONF $group_name glusterfs_heketi_nodeadmin_username root
@@ -383,10 +383,11 @@ function _configure_manila_glusterfs_heketi {
 function configure_manila_backend_glusterfs {
     case "${GLUSTERFS_MANILA_DRIVER_TYPE} in
     "glusterfs|glusterfs-nfs")
-        _configure_manila_glusterfs_nfs
+        _configure_manila_glusterfs_nfs GLUSTERFS
         ;;
     "glusterfs-heketi|glusterfs-nfs-heketi")
-        _configure_manila_glusterfs_heketi
+        _configure_manila_glusterfs_nfs_common glusterheketi1 GLUSTERFSHEKETI
+        _configure_manila_glusterfs_heketi glusterheketi1
         ;;
     "glusterfs-native")
         _configure_manila_glusterfs_native
