@@ -44,6 +44,8 @@ elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
     # Changing file permissions of glusterfs logs.
     # This avoids creation of zero sized glusterfs log files while running CI job (Bug: 1455951).
     sudo chmod 755 -R /var/log/glusterfs/
+    sudo find "$WORKSPACE" -type d -exec chmod 755 {} \;
+    sudo find "$WORKSPACE" -name '*.log' -type f -exec chmod 644 {} \;
 fi
 
 if [[ "$1" == "unstack" ]]; then
