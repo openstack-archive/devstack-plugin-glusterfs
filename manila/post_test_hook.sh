@@ -124,3 +124,9 @@ iniset $TEMPEST_CONFIG validation network_for_ssh ${PRIVATE_NETWORK_NAME:-"priva
 
 echo "Running tempest manila test suites"
 sudo -H -u jenkins tox -eall-plugin $MANILA_TESTS -- --concurrency=$MANILA_TEMPEST_CONCURRENCY
+
+_retval=$?
+
+find "$WORKSPACE" -name '*.log' -type f -exec chmod 644 {} \;
+
+(exit $_retval)
