@@ -124,3 +124,23 @@ iniset $TEMPEST_CONFIG validation network_for_ssh ${PRIVATE_NETWORK_NAME:-"priva
 
 echo "Running tempest manila test suites"
 sudo -H -u jenkins tox -eall-plugin $MANILA_TESTS -- --concurrency=$MANILA_TEMPEST_CONCURRENCY
+
+_retval=$?
+
+for  p in "" logs logs/glusterfs logs/glusterfs/quota-mount-manila-glusterfs-vol.log; do
+    for t in "" /; do ls -ld "$WORKSPACE/$p$t"; done
+done
+
+install_package dosfstools
+truncate -s 3g /tmp/fat.img
+mkdosfs /tmp/fat.img
+sudo mkdir "$WORKSPACE/logs/glusterfs"
+sudo mount /tmp/fat.img "$WORKSPACE/logs/glusterfs"
+
+for  p in "" logs logs/glusterfs logs/glusterfs/quota-mount-manila-glusterfs-vol.log; do
+    for t in "" /; do ls -ld "$WORKSPACE/$p$t"; done
+done
+
+find /srv/static/logs/ -ls
+
+(exit $_retval)
