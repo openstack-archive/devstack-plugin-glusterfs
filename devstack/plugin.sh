@@ -43,7 +43,24 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
 elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
     # Changing file permissions of glusterfs logs.
     # This avoids creation of zero sized glusterfs log files while running CI job (Bug: 1455951).
+    echo "Diag queries #1"
+    for  p in "" logs logs/glusterfs logs/glusterfs/quota-mount-manila-glusterfs-vol.log; do
+        for t in "" /; do
+            ls -ld /home/jenkins/workspace/*/$p$t || :
+        done
+    done
+    find /srv/static/logs/ -ls || :
     sudo chmod 755 -R /var/log/glusterfs/
+    sudo find /home/jenkins/workspace/* -type d -exec chmod 755 {} \;
+    sudo find /home/jenkins/workspace/* -name '*.log' -type f -exec chmod 644 {} \;
+    echo "Diag queries #2"
+    for  p in "" logs logs/glusterfs logs/glusterfs/quota-mount-manila-glusterfs-vol.log; do
+        for t in "" /; do
+            ls -ld /home/jenkins/workspace/*/$p$t || :
+        done
+    done
+    find /srv/static/logs/ -ls || :
+
 fi
 
 if [[ "$1" == "unstack" ]]; then
