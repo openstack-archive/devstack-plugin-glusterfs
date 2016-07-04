@@ -20,21 +20,19 @@ echo "API_RATE_LIMIT=False" >> $localrc_path
 echo "TEMPEST_SERVICES+=,manila" >> $localrc_path
 
 echo "MANILA_USE_DOWNGRADE_MIGRATIONS=True" >> $localrc_path
+echo "MANILA_MULTI_BACKEND=False" >> $localrc_path
 
-# JOB_NAME is defined in openstack-infra/config project
-# used by CI/CD, where this script is intended to be used.
-if [[ "$JOB_NAME" =~ "multibackend" ]]; then
-    echo "MANILA_MULTI_BACKEND=True" >> $localrc_path
-else
-    echo "MANILA_MULTI_BACKEND=False" >> $localrc_path
-fi
+# Import env vars defined in CI job.
+for env_var in ${DEVSTACK_LOCAL_CONFIG// / }; do
+    export $env_var;
+done
 
 # If the job tests glusterfs (NFS) driver, then create default share_type with
 # extra_spec snapshot_support as False. Becasuse the job that tests the
 # glusterfs (NFS) driver tests the directory based layout that doesn't support
 # snapshots. The job that tests glusterfs (NFS) driver has a name that
 # ends with "glusterfs".
-if [[ $JOB_NAME =~ manila-tempest-dsvm-glusterfs$ ]]; then
+if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs" ]]; then
     echo "MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS='snapshot_support=False'" >> $localrc_path
 fi
 

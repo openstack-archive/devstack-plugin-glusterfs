@@ -23,9 +23,12 @@ sudo chmod -R o+rx $BASE/new/devstack/files
 # Import devstack functions 'iniset'
 source $BASE/new/devstack/functions
 
+# Import env vars defined in CI job.
+for env_var in ${DEVSTACK_LOCAL_CONFIG// / }; do
+    export $env_var;
+done
 
-
-if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
+if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-native" ]]; then
     local BACKEND_NAME="GLUSTERNATIVE"
     iniset $TEMPEST_CONFIG share enable_protocols glusterfs
     iniset $TEMPEST_CONFIG share storage_protocol glusterfs
@@ -37,7 +40,7 @@ if [[ "$JOB_NAME" =~ "glusterfs-native" ]]; then
     # ro access_level is not supported by the driver.
     iniset $TEMPEST_CONFIG share enable_ro_access_level_for_protocols
 else
-    if [[ "$JOB_NAME" =~ "glusterfs-heketi" ]]; then
+    if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-heketi" ]]; then
         local BACKEND_NAME="GLUSTERFSHEKETI"
     else
         local BACKEND_NAME="GLUSTERFS"
@@ -94,15 +97,10 @@ cd $BASE/new/tempest
 export MANILA_TEMPEST_CONCURRENCY=${MANILA_TEMPEST_CONCURRENCY:-12}
 export MANILA_TESTS=${MANILA_TESTS:-'manila_tempest_tests.tests.api'}
 
-if [[ "$JOB_NAME" =~ "scenario" ]]; then
-    echo "Set test set to scenario only"
-    MANILA_TESTS='manila_tempest_tests.tests.scenario'
-fi
-
 # check if tempest plugin was installed correctly
 echo 'import pkg_resources; print list(pkg_resources.iter_entry_points("tempest.test_plugins"))' | python
 
-# Workaround for Tempest architectural changes
+# Workaround for Tempest architectural changes (only for Liberty and lower releases)
 # See bugs:
 # 1) https://bugs.launchpad.net/manila/+bug/1531049
 # 2) https://bugs.launchpad.net/tempest/+bug/1524717
