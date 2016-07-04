@@ -20,6 +20,7 @@ echo "API_RATE_LIMIT=False" >> $localrc_path
 echo "TEMPEST_SERVICES+=,manila" >> $localrc_path
 
 echo "MANILA_USE_DOWNGRADE_MIGRATIONS=True" >> $localrc_path
+echo "MANILA_SERVICE_IMAGE_ENABLED=False" >> $localrc_path
 echo "MANILA_MULTI_BACKEND=False" >> $localrc_path
 
 # If the job tests glusterfs (NFS) driver, then create default share_type with
