@@ -20,6 +20,7 @@ echo "API_RATE_LIMIT=False" >> $localrc_path
 echo "TEMPEST_SERVICES+=,manila" >> $localrc_path
 
 echo "MANILA_USE_DOWNGRADE_MIGRATIONS=True" >> $localrc_path
+echo "MANILA_SERVICE_IMAGE_ENABLED=False" >> $localrc_path
 
 # JOB_NAME is defined in openstack-infra/config project
 # used by CI/CD, where this script is intended to be used.
