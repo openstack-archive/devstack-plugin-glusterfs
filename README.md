@@ -35,6 +35,6 @@ As part of "unstack.sh":
 * To enable Gluster as a backend for Manila:
      CONFIGURE_GLUSTERFS_MANILA=True
   Also select specific gluster backend type for manila, default is "glusterfs":
-     GLUSTERFS_MANILA_DRIVER_TYPE=[glusterfs OR glusterfs-native]
+     GLUSTERFS_MANILA_DRIVER_TYPE=glusterfs-{nfs{,-heketi},native}
 
 * Then run "stack.sh"

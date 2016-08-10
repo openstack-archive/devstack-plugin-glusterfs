@@ -40,11 +40,17 @@ if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-native" ]]; then
     # ro access_level is not supported by the driver.
     iniset $TEMPEST_CONFIG share enable_ro_access_level_for_protocols
 else
-    if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-heketi" ]]; then
-        local BACKEND_NAME="GLUSTERFSHEKETI"
-    else
+    case "$GLUSTERFS_MANILA_DRIVER_TYPE" in
+    glusterfs|glusterfs-nfs)
         local BACKEND_NAME="GLUSTERFS"
-    fi
+        ;;
+    glusterfs-heketi|glusterfs-nfs-heketi)
+        local BACKEND_NAME="GLUSTERFSHEKETI"
+        ;;
+    *)
+        echo "no BACKEND_NAME for GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE}"
+        ;;
+    esac
     iniset $TEMPEST_CONFIG share enable_protocols nfs
     iniset $TEMPEST_CONFIG share enable_ip_rules_for_protocols nfs
     iniset $TEMPEST_CONFIG share storage_protocol NFS

@@ -33,9 +33,10 @@ done
 # glusterfs (NFS) driver tests the directory based layout that doesn't support
 # snapshots. The job that tests glusterfs (NFS) driver has a name that
 # ends with "glusterfs".
-if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs" ]]; then
+case "$GLUSTERFS_MANILA_DRIVER_TYPE" in
+glusterfs|glusterfs-nfs)
     echo "MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS='snapshot_support=False'" >> $localrc_path
-fi
+esac
 
 # Enabling isolated metadata in Neutron is required because
 # Tempest creates isolated networks and created vm's in scenario tests don't
