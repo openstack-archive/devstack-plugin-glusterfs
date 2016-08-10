@@ -87,7 +87,7 @@ fi
 CONFIGURE_GLUSTERFS_MANILA=${CONFIGURE_GLUSTERFS_MANILA:-False}
 
 if [ "$CONFIGURE_GLUSTERFS_MANILA" == "True" ]; then
-    # Set GLUSTERFS_MANILA_DRIVER_TYPE to either 'glusterfs' or 'glusterfs-native'.
+    # Set GLUSTERFS_MANILA_DRIVER_TYPE to one of 'glusterfs-{nfs{,-heketi},native}.
     GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE:-glusterfs}
 
     # Set GLUSTERFS_VG_NAME to the name of volume group.
