@@ -11,11 +11,11 @@ function install_glusterfs {
     elif is_ubuntu; then
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 3FE869A9
         if [ "$1" == "3.6" ]; then
-            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.6/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_6-trusty.list
-            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.6/ubuntu trusty main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_6-trusty.list
+            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.6/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_6.list
+            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.6/ubuntu $(lsb_release -sc) main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_6.list
         elif [ "$1" == "3.7" ]; then
-            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_7-trusty.list
-            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu trusty main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_7-trusty.list
+            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_7.list
+            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu $(lsb_release -sc) main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_7.list
         fi
         NO_UPDATE_REPOS=False
         REPOS_UPDATED=False
@@ -381,11 +381,18 @@ function _configure_manila_glusterfs_heketi {
 
 # Configure GlusterFS as a backend for Manila
 function configure_manila_backend_glusterfs {
-    if [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs-heketi" ]]; then
-        _configure_manila_glusterfs_heketi
-    elif [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs" ]]; then
+    case "$GLUSTERFS_MANILA_DRIVER_TYPE" in
+    glusterfs|glusterfs-nfs)
         _configure_manila_glusterfs_nfs
-    else
+        ;;
+    glusterfs-heketi|glusterfs-nfs-heketi)
+        _configure_manila_glusterfs_heketi
+        ;;
+    glusterfs-native)
         _configure_manila_glusterfs_native
-    fi
+        ;;
+    *)
+        echo "no configuration hook for GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE}"
+        ;;
+    esac
 }
