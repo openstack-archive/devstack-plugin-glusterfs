@@ -381,11 +381,18 @@ function _configure_manila_glusterfs_heketi {
 
 # Configure GlusterFS as a backend for Manila
 function configure_manila_backend_glusterfs {
-    if [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs-heketi" ]]; then
-        _configure_manila_glusterfs_heketi
-    elif [[ "${GLUSTERFS_MANILA_DRIVER_TYPE}" == "glusterfs" ]]; then
+    case "${GLUSTERFS_MANILA_DRIVER_TYPE} in
+    "glusterfs|glusterfs-nfs")
         _configure_manila_glusterfs_nfs
-    else
+        ;;
+    "glusterfs-heketi|glusterfs-nfs-heketi")
+        _configure_manila_glusterfs_heketi
+        ;;
+    "glusterfs-native")
         _configure_manila_glusterfs_native
-    fi
+        ;;
+    *)
+        echo "no configuration hook for GLUSTERFS_MANILA_DRIVER_TYPE=${GLUSTERFS_MANILA_DRIVER_TYPE}"
+        ;;
+    esac
 }
