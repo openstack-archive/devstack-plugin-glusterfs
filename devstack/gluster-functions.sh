@@ -9,13 +9,14 @@ function install_glusterfs {
     if [[ ${DISTRO} =~ rhel7 ]] && [[ ! -f /etc/yum.repos.d/glusterfs-epel.repo ]]; then
         sudo wget $GLUSTERFS_CENTOS_REPO -O /etc/yum.repos.d/glusterfs-epel.repo
     elif is_ubuntu; then
+        RELEASE_CODE_NAME=$(lsb_release -c | cut -d ':' -f 2 | sed 's/^[ \t]*//')
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 3FE869A9
         if [ "$1" == "3.6" ]; then
-            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.6/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_6-trusty.list
-            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.6/ubuntu trusty main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_6-trusty.list
+            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.6/ubuntu $RELEASE_CODE_NAME main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_6-$RELEASE_CODE_NAME.list
+            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.6/ubuntu $RELEASE_CODE_NAME main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_6-$RELEASE_CODE_NAME.list
         elif [ "$1" == "3.7" ]; then
-            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_7-trusty.list
-            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu trusty main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_7-trusty.list
+            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu $RELEASE_CODE_NAME main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_7-$RELEASE_CODE_NAME.list
+            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu $RELEASE_CODE_NAME main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_7-$RELEASE_CODE_NAME.list
         fi
         NO_UPDATE_REPOS=False
         REPOS_UPDATED=False
