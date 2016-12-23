@@ -214,8 +214,8 @@ function _create_thin_lv_pool {
     # Create a Volume Group
     init_lvm_volume_group $GLUSTERFS_VG_NAME 20G
 
-    # Create a think pool
-    sudo lvcreate -l 5110 -T $GLUSTERFS_VG_NAME/$GLUSTERFS_THIN_POOL_NAME
+    # Create a thin pool
+    sudo lvcreate -l 99%VG -T $GLUSTERFS_VG_NAME/$GLUSTERFS_THIN_POOL_NAME
 }
 
 # Creating Thin LV
