@@ -32,10 +32,19 @@ done
 # extra_spec snapshot_support as False. Becasuse the job that tests the
 # glusterfs (NFS) driver tests the directory based layout that doesn't support
 # snapshots. The job that tests glusterfs (NFS) driver has a name that
-# ends with "glusterfs".
+# ends with "glusterfs".  For glusterfs-native backend we are using the
+# volume layout, which does support snapshot creation as well as creation of
+# volumes from snapshots, so set the default share type accordingly.
 case "$GLUSTERFS_MANILA_DRIVER_TYPE" in
 glusterfs|glusterfs-nfs)
     echo "MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS='snapshot_support=False'" >> $localrc_path
+    ;;
+glusterfs-native)
+    echo "MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS='snapshot_support=True create_share_from_snapshot_support=True'" >> $localrc_path
+    ;;
+*)
+    # TODO(tbarron): Fill in appropriate line here for heketi.
+    ;;
 esac
 
 # Enabling isolated metadata in Neutron is required because
