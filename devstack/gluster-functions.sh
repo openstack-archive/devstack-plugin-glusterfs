@@ -107,6 +107,19 @@ function cleanup_glusterfs {
         _delete_gluster_shares $NOVA_GLUSTERFS_SHARE
     fi
 
+    # Clean up Manila GlusterFS
+    if [ "$CONFIGURE_GLUSTERFS_MANILA" = "True" ]; then
+        vols=$(sudo ls /opt/stack/data/manila/export)
+        for vol_name in $vols; do
+            sudo gluster --mode=script vol stop $vol_name || echo "OK"
+            sudo gluster --mode=script vol delete $vol_name || echo "OK"
+            sudo rm -rf  $MANILA_STATE_PATH/export/$vol_name/brick || true
+            sudo umount $MANILA_STATE_PATH/export/$vol_name || true
+            sudo rmdir $MANILA_STATE_PATH/export/$vol_name || true
+        done
+        sudo lvremove -f $GLUSTERFS_VG_NAME || true
+    fi
+
     if [[ -e ${GLUSTERFS_DISK_IMAGE} ]]; then
         sudo rm -f ${GLUSTERFS_DISK_IMAGE}
     fi
@@ -229,7 +242,7 @@ function _create_thin_lv_gluster_vol {
     test_with_retry "sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name" "mkfs.xfs failed"
 
     # Mount the filesystem
-    mkdir -p $MANILA_STATE_PATH/export/$vol_name
+    sudo mkdir -p $MANILA_STATE_PATH/export/$vol_name
     test_with_retry "sudo mount /dev/$GLUSTERFS_VG_NAME/$vol_name $MANILA_STATE_PATH/export/$vol_name" "mounting XFS from the LV failed"
 
     # Create a directory that would serve as a brick.
@@ -301,10 +314,10 @@ function _configure_manila_glusterfs_native {
 
 
     # Create necessary files to allow GlusterFS volumes to use TLS features
-    local common_name=server.com
+    local common_name='glusterfs-server'
     _configure_glusterfs_server_in_local_host_for_tls_support $common_name
 
-    # Create four GlusterFS volumes to be used as shares.
+    # Create GlusterFS volumes to be used as shares.
     _create_thin_lv_pool
 
     local i
