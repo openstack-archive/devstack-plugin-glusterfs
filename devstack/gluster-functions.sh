@@ -229,6 +229,8 @@ function _create_thin_lv_gluster_vol {
     test_with_retry "sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name" "mkfs.xfs failed"
 
     # Mount the filesystem
+    sudo chown -R $STACK_USER:$STACK_USER $MANILA_STATE_PATH
+    sudo chmod 755 $MANILA_STATE_PATH
     mkdir -p $MANILA_STATE_PATH/export/$vol_name
     test_with_retry "sudo mount /dev/$GLUSTERFS_VG_NAME/$vol_name $MANILA_STATE_PATH/export/$vol_name" "mounting XFS from the LV failed"
 
