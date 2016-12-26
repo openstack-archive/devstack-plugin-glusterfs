@@ -31,14 +31,18 @@ done
 if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-native" ]]; then
     local BACKEND_NAME="GLUSTERNATIVE"
     iniset $TEMPEST_CONFIG share enable_protocols glusterfs
-    iniset $TEMPEST_CONFIG share storage_protocol glusterfs
+    iniset $TEMPEST_CONFIG share capability_storage_protocol glusterfs
     # Disable tempest config option that enables creation of 'ip' type access
     # rules by default during tempest test runs.
     iniset $TEMPEST_CONFIG share enable_ip_rules_for_protocols
     iniset $TEMPEST_CONFIG share enable_cert_rules_for_protocols glusterfs
     iniset $TEMPEST_CONFIG share capability_snapshot_support True
+    iniset $TEMPEST_CONFIG share capablilty_create_share_from_snapshot_support True
     # ro access_level is not supported by the driver.
     iniset $TEMPEST_CONFIG share enable_ro_access_level_for_protocols
+    # Enable snapshot tests if they haven't been explicitly disabled
+    RUN_MANILA_SNAPSHOT_TESTS=${RUN_MANILA_SNAPSHOT_TESTS:-True}
+
 else
     case "$GLUSTERFS_MANILA_DRIVER_TYPE" in
     glusterfs|glusterfs-nfs)
@@ -56,8 +60,12 @@ else
     iniset $TEMPEST_CONFIG share storage_protocol NFS
     # ro access_level is not supported by the driver.
     iniset $TEMPEST_CONFIG share enable_ro_access_level_for_protocols
+    # Disable snapshot tests if they haven't been explicitly enabled
+    RUN_MANILA_SNAPSHOT_TESTS=${RUN_MANILA_SNAPSHOT_TESTS:-False}
+
 fi
 
+iniset $TEMPEST_CONFIG share run_snapshot_tests $RUN_MANILA_SNAPSHOT_TESTS
 
 iniset $TEMPEST_CONFIG share backend_names $BACKEND_NAME
 
@@ -88,9 +96,6 @@ iniset $TEMPEST_CONFIG share run_shrink_tests $RUN_MANILA_SHRINK_TESTS
 # Disable multi_tenancy tests
 iniset $TEMPEST_CONFIG share multitenancy_enabled False
 
-# Disable snapshot tests
-RUN_MANILA_SNAPSHOT_TESTS=${RUN_MANILA_SNAPSHOT_TESTS:-False}
-iniset $TEMPEST_CONFIG share run_snapshot_tests $RUN_MANILA_SNAPSHOT_TESTS
 
 # Disable consistency group tests
 RUN_MANILA_CG_TESTS=${RUN_MANILA_CG_TESTS:-False}
@@ -101,6 +106,8 @@ set +o errexit
 cd $BASE/new/tempest
 
 export MANILA_TEMPEST_CONCURRENCY=${MANILA_TEMPEST_CONCURRENCY:-12}
+# To test what is failing w/o concurrency issues
+export MANILA_TEMPEST_CONCURRENCY=1
 export MANILA_TESTS=${MANILA_TESTS:-'manila_tempest_tests.tests.api'}
 
 # check if tempest plugin was installed correctly
