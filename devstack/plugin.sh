@@ -47,8 +47,8 @@ elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
 fi
 
 if [[ "$1" == "unstack" ]]; then
-    cleanup_glusterfs
     stop_glusterfs
+    cleanup_glusterfs
 fi
 
 if [[ "$1" == "clean" ]]; then
