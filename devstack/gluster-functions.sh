@@ -229,7 +229,9 @@ function _create_thin_lv_gluster_vol {
     test_with_retry "sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name" "mkfs.xfs failed"
 
     # Mount the filesystem
-    mkdir -p $MANILA_STATE_PATH/export/$vol_name
+    if [! -d $MANILA_STATE_PATH/export/$vol_name ] ; then
+	mkdir -p $MANILA_STATE_PATH/export/$vol_name
+    fi
     test_with_retry "sudo mount /dev/$GLUSTERFS_VG_NAME/$vol_name $MANILA_STATE_PATH/export/$vol_name" "mounting XFS from the LV failed"
 
     # Create a directory that would serve as a brick.
