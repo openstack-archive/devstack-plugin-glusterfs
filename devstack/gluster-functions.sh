@@ -69,7 +69,6 @@ function _delete_gluster_shares {
     local shares=$1
     local share
     local gluster_volumes
-    _umount_shares $shares
 
     for share in $(echo $shares | sed "s/;/ /"); do
         gluster_volumes+=,$(echo $share | cut -d/ -f2);
@@ -80,6 +79,8 @@ function _delete_gluster_shares {
         sudo gluster --mode=script volume stop $vol_name
         sudo gluster --mode=script volume delete $vol_name
     done
+
+    _umount_shares $shares
 }
 
 # Cleanup GlusterFS
@@ -107,9 +108,18 @@ function cleanup_glusterfs {
         _delete_gluster_shares $NOVA_GLUSTERFS_SHARE
     fi
 
+    # Clean up Manila GlusterFS
+    if [ "$CONFIGURE_GLUSTERFS_MANILA" = "True" ]; then
+        vols=$(sudo gluster vol list | grep manila)
+        _delete_gluster_shares "$vols"
+        sudo rm -rf $MANILA_STATE_PATH/export
+    fi
+
     if [[ -e ${GLUSTERFS_DISK_IMAGE} ]]; then
         sudo rm -f ${GLUSTERFS_DISK_IMAGE}
     fi
+
+    stop_glusterfs
 
     if [[ "$OFFLINE" = "False" ]]; then
         uninstall_package glusterfs-server
@@ -117,6 +127,10 @@ function cleanup_glusterfs {
 
     if egrep -q ${GLUSTERFS_DATA_DIR} /proc/mounts; then
         sudo umount ${GLUSTERFS_DATA_DIR}
+    fi
+
+    if sudo vgs $GLUSTERFS_VG_NAME; then
+        sudo lvremove -f $GLUSTERFS_VG_NAME
     fi
 
     sudo rm -rf ${GLUSTERFS_DATA_DIR}
@@ -229,7 +243,9 @@ function _create_thin_lv_gluster_vol {
     test_with_retry "sudo mkfs.xfs -i size=512 /dev/$GLUSTERFS_VG_NAME/$vol_name" "mkfs.xfs failed"
 
     # Mount the filesystem
-    mkdir -p $MANILA_STATE_PATH/export/$vol_name
+    if [ ! -d $MANILA_STATE_PATH/export/$vol_name ] ; then
+        sudo mkdir -p $MANILA_STATE_PATH/export/$vol_name
+    fi
     test_with_retry "sudo mount /dev/$GLUSTERFS_VG_NAME/$vol_name $MANILA_STATE_PATH/export/$vol_name" "mounting XFS from the LV failed"
 
     # Create a directory that would serve as a brick.
@@ -238,7 +254,7 @@ function _create_thin_lv_gluster_vol {
     # Create a GlusterFS Volume.
     sudo gluster --mode=script vol create $vol_name $(hostname):$MANILA_STATE_PATH/export/$vol_name/brick
 
-    # Start gluster volume
+    # Start gluster volume.
     sudo gluster --mode=script volume start $vol_name
 }
 
@@ -262,13 +278,17 @@ function _configure_manila_glusterfs_nfs {
     # Create Gluster Volume
     _create_thin_lv_gluster_vol manila-glusterfs-vol 200G
 
+    # Ensure that it can be mounted by stack user.
+    sudo chown -R $STACK_USER:$STACK_USER $MANILA_STATE_PATH
+    sudo chmod -R u+x $MANILA_STATE_PATH
+
     # Configure manila.conf
     _configure_manila_glusterfs glusternfs1 manila-glusterfs-vol
 
     # Setting enabled_share_protocols to NFS
     iniset $MANILA_CONF DEFAULT enabled_share_protocols NFS
 
-    # Overrinding MANILA_ENABLED_BACKENDS to have only glusternfs1 backend
+    # Overriding MANILA_ENABLED_BACKENDS to have only glusternfs1 backend
     MANILA_ENABLED_BACKENDS=glusternfs1
 
     # Setting enabled_share_backends
@@ -301,10 +321,10 @@ function _configure_manila_glusterfs_native {
 
 
     # Create necessary files to allow GlusterFS volumes to use TLS features
-    local common_name=server.com
+    local common_name='glusterfs-server'
     _configure_glusterfs_server_in_local_host_for_tls_support $common_name
 
-    # Create four GlusterFS volumes to be used as shares.
+    # Create GlusterFS volumes to be used as shares.
     _create_thin_lv_pool
 
     local i

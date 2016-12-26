@@ -48,7 +48,6 @@ fi
 
 if [[ "$1" == "unstack" ]]; then
     cleanup_glusterfs
-    stop_glusterfs
 fi
 
 if [[ "$1" == "clean" ]]; then
