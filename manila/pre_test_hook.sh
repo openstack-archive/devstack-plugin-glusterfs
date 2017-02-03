@@ -36,6 +36,13 @@ done
 case "$GLUSTERFS_MANILA_DRIVER_TYPE" in
 glusterfs|glusterfs-nfs)
     echo "MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS='snapshot_support=False'" >> $localrc_path
+    ;;
+glusterfs-native)
+    echo "MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS='snapshot_support=True create_share_from_snapshot_support=True'" >> $localrc_path
+    ;;
+*)
+    # TODO(tbarron): Fill in appropriate line here for heketi.
+    ;;
 esac
 
 # Enabling isolated metadata in Neutron is required because
