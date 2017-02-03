@@ -31,12 +31,13 @@ done
 if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-native" ]]; then
     local BACKEND_NAME="GLUSTERNATIVE"
     iniset $TEMPEST_CONFIG share enable_protocols glusterfs
-    iniset $TEMPEST_CONFIG share storage_protocol glusterfs
+    iniset $TEMPEST_CONFIG share capability_storage_protocol glusterfs
     # Disable tempest config option that enables creation of 'ip' type access
     # rules by default during tempest test runs.
     iniset $TEMPEST_CONFIG share enable_ip_rules_for_protocols
     iniset $TEMPEST_CONFIG share enable_cert_rules_for_protocols glusterfs
     iniset $TEMPEST_CONFIG share capability_snapshot_support True
+    iniset $TEMPEST_CONFIG share capability_create_share_from_snapshot_support True
     # ro access_level is not supported by the driver.
     iniset $TEMPEST_CONFIG share enable_ro_access_level_for_protocols
 else
