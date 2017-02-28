@@ -42,6 +42,8 @@ if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-native" ]]; then
     iniset $TEMPEST_CONFIG share enable_ro_access_level_for_protocols
     # Enable snapshot tests if they haven't been explicitly disabled
     RUN_MANILA_SNAPSHOT_TESTS=${RUN_MANILA_SNAPSHOT_TESTS:-True}
+    # Experiment to see if our timeout issues are due to concurrency issues.
+    MANILA_TEMPEST_CONCURRENCY=1
 else
     case "$GLUSTERFS_MANILA_DRIVER_TYPE" in
     glusterfs|glusterfs-nfs)
