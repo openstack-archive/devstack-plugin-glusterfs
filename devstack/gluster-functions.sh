@@ -24,10 +24,8 @@ function install_glusterfs {
     install_package glusterfs-server
     install_package xfsprogs
 
-    if is_fedora; then
-        stop_glusterfs
-        _start_glusterfs
-    fi
+    stop_glusterfs
+    _start_glusterfs
 
     _create_glusterfs_disk
 }
@@ -35,8 +33,10 @@ function install_glusterfs {
 # Start gluster service
 function _start_glusterfs {
     if is_ubuntu; then
+        sudo sed -i -E  's/^(GLUSTERD_OPTS=).*/\1"-L TRACE"/' /etc/init.d/glusterfs-server
         sudo service glusterfs-server start
     else
+        sudo sh -c "echo \"LOG_LEVEL='TRACE'\" >> /etc/sysconfig/glusterd"
         sudo service glusterd start
     fi
 }
@@ -138,6 +138,8 @@ function _create_gluster_volume {
             create $glusterfs_volume $(hostname):${GLUSTERFS_DATA_DIR}/$glusterfs_volume
     sudo gluster --mode=script volume start $glusterfs_volume
     sudo gluster --mode=script volume set $glusterfs_volume server.allow-insecure on
+    #sudo gluster --mode=script volume set $glusterfs_volume diagnostics.brick-log-level TRACE
+    #sudo gluster --mode=script volume set $glusterfs_volume diagnostics.client-log-level TRACE
 }
 
 function _create_gluster_volumes {
@@ -237,6 +239,9 @@ function _create_thin_lv_gluster_vol {
 
     # Create a GlusterFS Volume.
     sudo gluster --mode=script vol create $vol_name $(hostname):$MANILA_STATE_PATH/export/$vol_name/brick
+
+    #sudo gluster --mode=script volume set $vol_name diagnostics.brick-log-level TRACE
+    #sudo gluster --mode=script volume set $vol_name diagnostics.client-log-level TRACE
 
     # Start gluster volume
     sudo gluster --mode=script volume start $vol_name
