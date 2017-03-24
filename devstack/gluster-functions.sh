@@ -35,8 +35,10 @@ function install_glusterfs {
 # Start gluster service
 function _start_glusterfs {
     if is_ubuntu; then
+        sudo sed -i -E  's/^(GLUSTERD_OPTS=).*/\1"-L TRACE"/' /etc/init.d/glusterfs-server
         sudo service glusterfs-server start
     else
+        sudo sh -c "echo \"LOG_LEVEL='TRACE'\" >> /etc/sysconfig/glusterd"
         sudo service glusterd start
     fi
 }
@@ -138,6 +140,8 @@ function _create_gluster_volume {
             create $glusterfs_volume $(hostname):${GLUSTERFS_DATA_DIR}/$glusterfs_volume
     sudo gluster --mode=script volume start $glusterfs_volume
     sudo gluster --mode=script volume set $glusterfs_volume server.allow-insecure on
+    sudo gluster --mode=script volume set $glusterfs_volume diagnostics.brick-log-level TRACE
+    sudo gluster --mode=script volume set $glusterfs_volume diagnostics.client-log-level TRACE
 }
 
 function _create_gluster_volumes {
