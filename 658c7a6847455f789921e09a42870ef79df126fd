@@ -1,0 +1,9 @@
+Code-Review+1: Tom Barron <tpb@dyncloud.net>
+Code-Review+2: Ramana Raja <rraja@redhat.com>
+Workflow+1: Ramana Raja <rraja@redhat.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Tue, 17 Oct 2017 12:46:00 +0000
+Reviewed-on: https://review.openstack.org/512557
+Project: openstack/devstack-plugin-glusterfs
+Branch: refs/heads/master
