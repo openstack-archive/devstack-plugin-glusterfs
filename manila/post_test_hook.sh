@@ -16,8 +16,8 @@
 
 TEMPEST_CONFIG=$BASE/new/tempest/etc/tempest.conf
 
-sudo chown -R jenkins:stack $BASE/new/tempest
-sudo chown -R jenkins:stack $BASE/data/tempest
+sudo chown -R $USER:stack $BASE/new/tempest
+sudo chown -R $USER:stack $BASE/data/tempest
 sudo chmod -R o+rx $BASE/new/devstack/files
 
 # Import devstack functions 'iniset'
@@ -127,7 +127,7 @@ iniset $TEMPEST_CONFIG validation ssh_timeout $BUILD_TIMEOUT
 iniset $TEMPEST_CONFIG validation network_for_ssh ${PRIVATE_NETWORK_NAME:-"private"}
 
 echo "Running tempest manila test suites"
-sudo -H -u jenkins tox -eall-plugin $MANILA_TESTS -- --concurrency=$MANILA_TEMPEST_CONCURRENCY
+sudo -H -u $USER tox -eall-plugin $MANILA_TESTS -- --concurrency=$MANILA_TEMPEST_CONCURRENCY
 
 _retval=$?
 
