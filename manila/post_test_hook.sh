@@ -28,6 +28,28 @@ for env_var in ${DEVSTACK_LOCAL_CONFIG// / }; do
     export $env_var;
 done
 
+printenv
+
+# === Handle script arguments ===
+# The script arguments as detailed here in the manila CI job
+# template,
+# https://github.com/openstack-infra/project-config/commit/6ae99cee70a33d6cc312a7f9a83aa6db8b39ce21
+# Handle the relevant ones.
+
+# First argument is the type of backend configuration that is setup. It can
+# either be 'singlebackend' or 'multiplebackend'.
+MANILA_BACKEND_TYPE=$1
+MANILA_BACKEND_TYPE=${MANILA_BACKEND_TYPE:-singlebackend}
+
+# Second argument is the type of the cephfs driver that is setup. Currently,
+# 'cephfsnative' is the only possibility.
+GLUSTERFS_MANILA_DRIVER_TYPE=$2
+
+export MANILA_BACKEND_TYPE
+export GLUSTERFS_MANILA_DRIVER_TYPE
+
+printenv
+
 if [[ "$GLUSTERFS_MANILA_DRIVER_TYPE" == "glusterfs-native" ]]; then
     local BACKEND_NAME="GLUSTERNATIVE"
     iniset $TEMPEST_CONFIG share enable_protocols glusterfs
