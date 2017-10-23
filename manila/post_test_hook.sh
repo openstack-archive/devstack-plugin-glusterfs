@@ -127,7 +127,7 @@ iniset $TEMPEST_CONFIG validation ssh_timeout $BUILD_TIMEOUT
 iniset $TEMPEST_CONFIG validation network_for_ssh ${PRIVATE_NETWORK_NAME:-"private"}
 
 echo "Running tempest manila test suites"
-sudo -H -u $USER tox -eall-plugin $MANILA_TESTS -- --concurrency=$MANILA_TEMPEST_CONCURRENCY
+sudo -H -u $USER tox -eall -- $MANILA_TESTS --concurrency=$MANILA_TEMPEST_CONCURRENCY
 
 _retval=$?
 
