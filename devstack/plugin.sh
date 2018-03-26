@@ -21,8 +21,8 @@
 # - cleanup_glusterfs
 
 if [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
-    echo_summary "Installing GlusterFS 3.7"
-    install_glusterfs 3.7
+    echo_summary "Installing GlusterFS 3.8"
+    install_glusterfs 3.8
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     if is_service_enabled c-bak && [[ "$CONFIGURE_GLUSTERFS_CINDER_BACKUP" == "True" ]]; then
         echo_summary "Configuring GlusterFS as a backend for Cinder backup driver"

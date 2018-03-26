@@ -16,6 +16,9 @@ function install_glusterfs {
         elif [ "$1" == "3.7" ]; then
             echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_7.list
             echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.7/ubuntu $(lsb_release -sc) main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_7.list
+        elif [ "$1" == "3.8" ]; then
+            echo "deb http://ppa.launchpad.net/gluster/glusterfs-3.8/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/glusterfs-3_8.list
+            echo "deb-src http://ppa.launchpad.net/gluster/glusterfs-3.8/ubuntu $(lsb_release -sc) main" | sudo tee --append /etc/apt/sources.list.d/glusterfs-3_8.list
         fi
         NO_UPDATE_REPOS=False
         REPOS_UPDATED=False
