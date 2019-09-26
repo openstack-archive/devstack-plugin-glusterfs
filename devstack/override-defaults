@@ -1,5 +1,0 @@
-# Plug-in overrides
-
-if [ "$CONFIGURE_GLUSTERFS_CINDER" == "True" ]; then
-    CINDER_ENABLED_BACKENDS=${CINDER_ENABLED_BACKENDS:-glusterfs:glusterfs,lvm:lvm1}
-fi
